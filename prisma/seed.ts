@@ -35,7 +35,7 @@ async function main() {
   const ceo = await prisma.user.create({
     data: {
       name: "Chinedu Okonkwo",
-      email: "ceo@vehco.com",
+      email: "ceo@facotransport.com",
       password: ceoPassword,
       role: "CEO",
       branchId: mainBranch.id,
@@ -45,7 +45,7 @@ async function main() {
   const manager = await prisma.user.create({
     data: {
       name: "Amina Bello",
-      email: "manager@vehco.com",
+      email: "manager@facotransport.com",
       password: managerPassword,
       role: "MANAGER",
       branchId: mainBranch.id,
@@ -55,7 +55,7 @@ async function main() {
   const secretary = await prisma.user.create({
     data: {
       name: "Tunde Adebayo",
-      email: "secretary@vehco.com",
+      email: "secretary@facotransport.com",
       password: secretaryPassword,
       role: "SECRETARY",
       branchId: mainBranch.id,
@@ -66,7 +66,7 @@ async function main() {
     data: {
       firstName: "Emeka",
       lastName: "Okafor",
-      email: "e.okafor@vehco.com",
+      email: "e.okafor@facotransport.com",
       phone: "+234-803-456-7890",
       licenseNumber: "LAG-DL-982341",
       licenseExpiry: new Date("2027-11-15"),
@@ -80,7 +80,7 @@ async function main() {
     data: {
       firstName: "Ibrahim",
       lastName: "Musa",
-      email: "i.musa@vehco.com",
+      email: "i.musa@facotransport.com",
       phone: "+234-805-678-9012",
       licenseNumber: "ABJ-DL-773120",
       licenseExpiry: new Date("2026-08-20"),

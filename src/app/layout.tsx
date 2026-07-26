@@ -5,6 +5,10 @@ import { ConditionalLayout } from "@/components/layout/ConditionalLayout";
 export const metadata: Metadata = {
   title: "Faco Vehicle Mgt App - Fleet Management",
   description: "Centralized vehicle administration, driver tracking, maintenance, fuel tracking, approvals and QR code identification for Faco Transport.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

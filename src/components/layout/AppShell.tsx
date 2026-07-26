@@ -56,7 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <ShellContext.Provider value={value}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex w-full">
         {/* Mobile overlay */}
         <div
           className={`fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-[1px] transition-opacity duration-200 lg:hidden ${
@@ -68,7 +68,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main className="flex-1 flex flex-col min-w-0 bg-slate-50 w-full lg:ml-0">
+        <main className="flex-1 flex flex-col min-w-0 bg-slate-50 w-full h-screen overflow-y-auto lg:ml-0">
           {children}
         </main>
       </div>
