@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #0F6B4B;
+  --secondary: #1E8E5A;
+  --accent: #F4B400;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --text: #1F2937;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safer page padding on small screens */
+.page-pad {
+  @apply p-4 sm:p-6 space-y-5 sm:space-y-6;
+}
+
+/* Touch-friendly tables on mobile */
+.table-scroll {
+  @apply overflow-x-auto -mx-1 sm:mx-0;
+}
+
+@media print {
+  body {
+    background-color: #ffffff;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}

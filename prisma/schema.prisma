@@ -1,0 +1,204 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Branch {
+  id        String    @id @default(uuid())
+  name      String
+  code      String    @unique
+  location  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  users     User[]
+  vehicles  Vehicle[]
+  drivers   Driver[]
+}
+
+model User {
+  id                 String              @id @default(uuid())
+  name               String
+  email              String              @unique
+  password           String
+  role               String              @default("SECRETARY")
+  branchId           String?
+  branch             Branch?             @relation(fields: [branchId], references: [id])
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  approvedRecords    MaintenanceRecord[] @relation("ApprovedBy")
+  requestedApprovals Approval[]          @relation("RequestedBy")
+  givenApprovals     Approval[]          @relation("Approver")
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+}
+
+model Vehicle {
+  id                 String              @id @default(uuid())
+  code               String              @unique
+  name               String
+  registrationNumber String              @unique
+  vin                String?             @unique
+  engineNumber       String?
+  manufacturer       String
+  model              String
+  year               Int
+  colour             String?
+  fuelType           String              @default("PETROL")
+  status             String              @default("ACTIVE")
+  branchId           String?
+  branch             Branch?             @relation(fields: [branchId], references: [id])
+  assignedDriverId   String?
+  assignedDriver     Driver?             @relation(fields: [assignedDriverId], references: [id])
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  deletedAt          DateTime?
+  assignments        VehicleAssignment[]
+  fuelRecords        FuelRecord[]
+  maintenanceRecords MaintenanceRecord[]
+  expenses           Expense[]
+  documents          Document[]
+}
+
+model Driver {
+  id                String              @id @default(uuid())
+  firstName         String
+  lastName          String
+  email             String              @unique
+  phone             String
+  licenseNumber     String              @unique
+  licenseExpiry     DateTime
+  employmentStatus  String              @default("ACTIVE")
+  emergencyContact  String?
+  branchId          String?
+  branch            Branch?             @relation(fields: [branchId], references: [id])
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  assignedVehicles  Vehicle[]
+  assignments       VehicleAssignment[]
+  fuelRecords       FuelRecord[]
+  documents         Document[]
+}
+
+model VehicleAssignment {
+  id        String    @id @default(uuid())
+  vehicleId String
+  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverId  String
+  driver    Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  notes     String?
+  createdAt DateTime  @default(now())
+}
+
+model FuelRecord {
+  id            String   @id @default(uuid())
+  vehicleId     String
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverId      String?
+  driver        Driver?  @relation(fields: [driverId], references: [id])
+  litres        Float
+  pricePerLitre Float
+  totalCost     Float
+  odometer      Float
+  vendor        String?
+  receiptUrl    String?
+  date          DateTime @default(now())
+  createdAt     DateTime @default(now())
+}
+
+model MaintenanceRecord {
+  id             String             @id @default(uuid())
+  vehicleId      String
+  vehicle        Vehicle            @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  serviceType    String
+  labourCost     Float              @default(0.0)
+  partsCost      Float              @default(0.0)
+  totalCost      Float
+  vendor         String?
+  receiptUrl     String?
+  photosUrl      String?
+  nextServiceDate DateTime?
+  status         String             @default("PENDING")
+  approvedById   String?
+  approvedBy     User?              @relation("ApprovedBy", fields: [approvedById], references: [id])
+  createdAt      DateTime           @default(now())
+  parts          PartInstallation[]
+}
+
+model PartInstallation {
+  id                  String            @id @default(uuid())
+  maintenanceRecordId String
+  maintenanceRecord   MaintenanceRecord @relation(fields: [maintenanceRecordId], references: [id], onDelete: Cascade)
+  partName            String
+  partNumber          String?
+  quantity            Int               @default(1)
+  unitCost            Float
+  totalCost           Float
+  createdAt           DateTime          @default(now())
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  category    String
+  amount      Float
+  description String?
+  date        DateTime @default(now())
+  receiptUrl  String?
+  createdAt   DateTime @default(now())
+}
+
+model Document {
+  id         String    @id @default(uuid())
+  title      String
+  type       String
+  fileUrl    String
+  expiryDate DateTime?
+  vehicleId  String?
+  vehicle    Vehicle?  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverId   String?
+  driver     Driver?   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+}
+
+model Approval {
+  id            String   @id @default(uuid())
+  entityType    String
+  entityId      String
+  requestedById String
+  requestedBy   User     @relation("RequestedBy", fields: [requestedById], references: [id])
+  approverId    String?
+  approver      User?    @relation("Approver", fields: [approverId], references: [id])
+  status        String   @default("PENDING")
+  comments      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  createdAt DateTime @default(now())
+}

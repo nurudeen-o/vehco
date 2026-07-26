@@ -1,0 +1,16 @@
+node_modules
+plan
+.next
+*.db
+*.db-journal
+.env
+.env.local
+build
+dist
+scripts
+
+*.md
+# Local Netlify folder
+.netlify
+*.lock
+.DS_Store
