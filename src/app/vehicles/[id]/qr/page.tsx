@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Printer, Download } from "lucide-react";
 import Link from "next/link";
 import QRCode from "qrcode";
+import { AppLogo } from "@/components/shared/AppLogo";
 
 export default function VehicleQRPage({
   params,
@@ -89,10 +90,7 @@ export default function VehicleQRPage({
           {cardFormat === "card" && (
             <div className="w-[450px] bg-white border-2 border-slate-900 rounded-2xl shadow-xl overflow-hidden print:shadow-none">
               <div className="bg-[#0F6B4B] text-white p-4 flex items-center justify-between">
-                <div>
-                  <h1 className="font-bold text-lg leading-tight tracking-wider">vehiCO</h1>
-                  <p className="text-[10px] uppercase tracking-widest opacity-80">Official Fleet Identification</p>
-                </div>
+                <AppLogo size={48} showText dark />
                 <div className="text-right">
                   <span className="text-xs font-mono font-bold bg-[#F4B400] text-slate-900 px-2 py-0.5 rounded">
                     {vehicle.code}
@@ -140,7 +138,7 @@ export default function VehicleQRPage({
           {cardFormat === "sticker" && (
             <div className="w-[320px] bg-emerald-950 text-white border-2 border-emerald-500 rounded-xl p-5 shadow-xl text-center space-y-3">
               <div className="flex justify-between items-center border-b border-emerald-800 pb-2">
-                <span className="font-bold text-sm text-[#F4B400]">vehiCO FLEET</span>
+                <img src="/logo.png" alt="Faco" className="h-10 w-auto rounded bg-white/10" />
                 <span className="text-xs font-mono font-bold text-white">{vehicle.code}</span>
               </div>
               {qrDataUrl && (
@@ -155,8 +153,8 @@ export default function VehicleQRPage({
 
           {cardFormat === "tag" && (
             <div className="w-[280px] bg-white border-2 border-slate-800 rounded-t-full rounded-b-2xl p-6 shadow-xl text-center space-y-4">
-              <div className="w-10 h-10 border-4 border-slate-800 rounded-full mx-auto mb-2"></div>
-              <h2 className="font-bold text-lg text-slate-900 leading-tight">vehiCO</h2>
+              <img src="/logo.png" alt="Faco" className="h-14 w-auto mx-auto rounded-lg" />
+              <h2 className="font-bold text-lg text-slate-900 leading-tight">Faco Vehicle</h2>
               <span className="inline-block bg-[#0F6B4B] text-white text-xs font-mono font-bold px-3 py-1 rounded-full">
                 {vehicle.code}
               </span>

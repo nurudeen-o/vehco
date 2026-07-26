@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hasPermission } from "@/lib/permissions";
+import { AppLogo } from "@/components/shared/AppLogo";
 
 type NavItem = {
   name: string;
@@ -57,7 +58,8 @@ const navigation: NavGroup[] = [
     label: "Governance",
     items: [
       { name: "Approvals", href: "/approvals", icon: CheckSquare },
-      { name: "Reports", href: "/reports", icon: BarChart3 },
+      { name: "Analytics", href: "/analytics", icon: BarChart3 },
+      { name: "Reports", href: "/reports", icon: FileText },
       {
         name: "Settings",
         href: "/settings",
@@ -107,23 +109,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       {/* Brand */}
       <div className="px-4 pt-5 pb-4 border-b border-slate-800">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-xl bg-[#0F6B4B] flex items-center justify-center font-bold text-white text-lg shadow-sm ring-1 ring-white/10">
-                vC
-              </div>
-              <span
-                className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900"
-                aria-hidden
-              />
-            </div>
-            <div className="min-w-0">
-              <h1 className="font-bold text-[1.05rem] leading-tight tracking-tight text-white">
-                vehi<span className="text-[#F4B400]">CO</span>
-              </h1>
-              <p className="text-[11px] text-slate-400 mt-0.5 truncate">Fleet Management</p>
-            </div>
-          </div>
+          <AppLogo size={44} showText dark className="min-w-0" />
           <button
             type="button"
             onClick={onClose}

@@ -6,6 +6,18 @@ import { formatDate } from "@/lib/utils";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import fs from "fs";
+import path from "path";
+
+function getLogoData(): string | null {
+  try {
+    const logoPath = path.join(process.cwd(), "public", "logo.png");
+    const buffer = fs.readFileSync(logoPath);
+    return `data:image/png;base64,${buffer.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
 
 export async function GET(request: Request) {
   const session = await getSession();
@@ -55,6 +67,9 @@ export async function GET(request: Request) {
 
   if (format === "csv") {
     const csv = [
+      `"Faco Vehicle Mgt App - Fleet Audit & System Activity Log"`,
+      `"Generated ${formatDate(new Date())}"`,
+      "",
       columns.join(","),
       ...rows.map((row) =>
         row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")
@@ -64,13 +79,19 @@ export async function GET(request: Request) {
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="vehico_audit_logs_${Date.now()}.csv"`,
+        "Content-Disposition": `attachment; filename="faco_audit_logs_${Date.now()}.csv"`,
       },
     });
   }
 
   if (format === "excel") {
-    const ws = XLSX.utils.aoa_to_sheet([columns, ...rows]);
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["Faco Vehicle Mgt App - Fleet Audit & System Activity Log"],
+      [`Generated ${formatDate(new Date())}`],
+      [],
+      columns,
+      ...rows,
+    ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Audit Logs");
     const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
@@ -79,7 +100,7 @@ export async function GET(request: Request) {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="vehico_audit_logs_${Date.now()}.xlsx"`,
+        "Content-Disposition": `attachment; filename="faco_audit_logs_${Date.now()}.xlsx"`,
       },
     });
   }
@@ -88,19 +109,32 @@ export async function GET(request: Request) {
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+    const logoData = getLogoData();
 
     doc.setFillColor(15, 107, 75);
     doc.rect(0, 0, pageWidth, 26, "F");
     doc.setFillColor(244, 180, 0);
     doc.rect(0, 26, pageWidth, 2, "F");
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("vehiCO", 14, 12);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text("Audit & System Activity Log", 14, 18);
+    if (logoData) {
+      doc.addImage(logoData, "PNG", 14, 6, 12, 12);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Faco Vehicle Mgt App", 30, 12);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text("Fleet Audit & System Activity Log", 30, 18);
+    } else {
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Faco Vehicle Mgt App", 14, 12);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text("Fleet Audit & System Activity Log", 14, 18);
+    }
+
     doc.setFontSize(9);
     doc.text(`Exported by ${session.name} (${session.role})`, pageWidth - 14, 12, {
       align: "right",
@@ -144,7 +178,7 @@ export async function GET(request: Request) {
       doc.setFontSize(7);
       doc.setTextColor(100, 116, 139);
       doc.text(
-        `vehiCO Audit Export  |  Page ${i} of ${totalPages}`,
+        `Faco Vehicle Mgt App Audit Export  |  Page ${i} of ${totalPages}`,
         14,
         pageHeight - 8
       );
@@ -154,7 +188,7 @@ export async function GET(request: Request) {
     return new NextResponse(pdfBuf as unknown as ArrayBuffer, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="vehico_audit_logs_${Date.now()}.pdf"`,
+        "Content-Disposition": `attachment; filename="faco_audit_logs_${Date.now()}.pdf"`,
       },
     });
   }

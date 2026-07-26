@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { CheckCircle2, ShieldCheck, XCircle, AlertCircle, Car, User, Fuel, Phone, Mail, Award } from "lucide-react";
+import { AppLogo } from "@/components/shared/AppLogo";
 import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -13,8 +14,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { vehicleCode } = await params;
   return {
-    title: `${vehicleCode} | vehiCO Fleet Verification`,
-    description: "Official vehicle identification powered by vehiCO Enterprise Fleet Systems.",
+    title: `${vehicleCode} | Faco Vehicle Mgt App Fleet Verification`,
+    description: "Official vehicle identification powered by Faco Transport Fleet Systems.",
   };
 }
 
@@ -88,13 +89,8 @@ export default async function PublicQRPage({
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-start py-10 px-4">
       <div className="w-full max-w-sm space-y-4">
         <div className="text-center space-y-1">
-          <div className="inline-flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-[#0F6B4B] flex items-center justify-center font-bold text-white text-sm">
-              vC
-            </div>
-            <span className="font-bold text-lg text-slate-900">
-              vehi<span className="text-[#F4B400]">CO</span>
-            </span>
+          <div className="flex justify-center mb-2">
+            <AppLogo size={56} showText />
           </div>
           <p className="text-[11px] text-slate-400 uppercase font-semibold tracking-wider">
             Official Fleet Verification
@@ -206,7 +202,7 @@ export default async function PublicQRPage({
             For full operational data, log in with employee credentials.
           </p>
           <p className="text-[10px] text-slate-300">
-            Powered by vehiCO Enterprise Fleet Systems · {new Date().getFullYear()}
+            Powered by Faco Transport Fleet Systems · {new Date().getFullYear()}
           </p>
         </div>
       </div>

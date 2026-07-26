@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, DollarSign } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { VehicleSpendAnalysis } from "@/components/analytics/VehicleSpendAnalysis";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +28,14 @@ export default async function ExpensesPage() {
             <h3 className="text-lg font-bold text-slate-900">Fleet Operating Expenses</h3>
             <p className="text-xs text-slate-500">Track insurance, licensing, registration, repairs, and miscellaneous costs.</p>
           </div>
-          <Link href="/expenses/new">
-            <Button variant="primary" size="sm">
-              <Plus className="w-4 h-4" /> Add Expense Record
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <VehicleSpendAnalysis buttonLabel="Vehicle Spend Analysis" />
+            <Link href="/expenses/new">
+              <Button variant="primary" size="sm">
+                <Plus className="w-4 h-4" /> Add Expense Record
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <Card>

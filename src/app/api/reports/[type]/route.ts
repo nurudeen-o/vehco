@@ -4,6 +4,8 @@ import { formatDate } from '@/lib/utils';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import fs from 'fs';
+import path from 'path';
 
 const BRAND = {
   primary: [15, 107, 75] as [number, number, number],
@@ -15,7 +17,17 @@ const BRAND = {
   border: [226, 232, 240] as [number, number, number],
 };
 
-function drawPdfHeader(doc: jsPDF, title: string, meta: string, pageWidth: number) {
+function getLogoData(): string | null {
+  try {
+    const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+    const buffer = fs.readFileSync(logoPath);
+    return `data:image/png;base64,${buffer.toString('base64')}`;
+  } catch {
+    return null;
+  }
+}
+
+function drawPdfHeader(doc: jsPDF, title: string, meta: string, pageWidth: number, logoData: string | null) {
   // Top brand bar
   doc.setFillColor(...BRAND.primary);
   doc.rect(0, 0, pageWidth, 28, 'F');
@@ -24,22 +36,27 @@ function drawPdfHeader(doc: jsPDF, title: string, meta: string, pageWidth: numbe
   doc.setFillColor(...BRAND.accent);
   doc.rect(0, 28, pageWidth, 2.5, 'F');
 
-  // Logo badge
-  doc.setFillColor(...BRAND.white);
-  doc.roundedRect(12, 7, 14, 14, 2, 2, 'F');
-  doc.setTextColor(...BRAND.primary);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('vC', 19, 16, { align: 'center' });
+  // Logo image
+  if (logoData) {
+    doc.addImage(logoData, 'PNG', 12, 7, 14, 14);
+  } else {
+    // Fallback badge
+    doc.setFillColor(...BRAND.white);
+    doc.roundedRect(12, 7, 14, 14, 2, 2, 'F');
+    doc.setTextColor(...BRAND.primary);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('FV', 19, 16, { align: 'center' });
+  }
 
   // Brand name
   doc.setTextColor(...BRAND.white);
   doc.setFontSize(14);
-  doc.text('vehiCO', 30, 13);
+  doc.text('Faco Vehicle Mgt App', 30, 13);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(200, 220, 210);
-  doc.text('Enterprise Fleet Management', 30, 19);
+  doc.text('Fleet Management System', 30, 19);
 
   // Report title on the right of header
   doc.setFont('helvetica', 'bold');
@@ -61,7 +78,7 @@ function drawPdfFooter(doc: jsPDF, pageWidth: number, pageHeight: number, pageNu
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(...BRAND.muted);
-  doc.text('vehiCO Fleet Intelligence  |  Confidential', 14, y);
+  doc.text('Faco Vehicle Mgt App  |  Confidential', 14, y);
   doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - 14, y, { align: 'right' });
 }
 
@@ -231,6 +248,9 @@ export async function GET(request: Request, context: any) {
 
   if (format === 'csv') {
     const csvContent = [
+      `"Faco Vehicle Mgt App - ${title}"`,
+      `"Generated ${formatDate(new Date())}"`,
+      '',
       columns.join(','),
       ...data.map(row => row.map((cell: any) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
     ].join('\n');
@@ -238,13 +258,19 @@ export async function GET(request: Request, context: any) {
     return new NextResponse(csvContent, {
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="vehico_${reportType}_report.csv"`
+        'Content-Disposition': `attachment; filename="faco_${reportType}_report.csv"`
       }
     });
   }
 
   if (format === 'excel') {
-    const ws = XLSX.utils.aoa_to_sheet([columns, ...data]);
+    const ws = XLSX.utils.aoa_to_sheet([
+      [`Faco Vehicle Mgt App - ${title}`],
+      [`Generated ${formatDate(new Date())}`],
+      [],
+      columns,
+      ...data
+    ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Report');
     const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
@@ -252,7 +278,7 @@ export async function GET(request: Request, context: any) {
     return new NextResponse(buf, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="vehico_${reportType}_report.xlsx"`
+        'Content-Disposition': `attachment; filename="faco_${reportType}_report.xlsx"`
       }
     });
   }
@@ -263,8 +289,9 @@ export async function GET(request: Request, context: any) {
     const pageHeight = doc.internal.pageSize.getHeight();
     const generatedAt = formatDate(new Date());
     const meta = `Generated ${generatedAt}`;
+    const logoData = getLogoData();
 
-    drawPdfHeader(doc, title, meta, pageWidth);
+    drawPdfHeader(doc, title, meta, pageWidth, logoData);
 
     // Intro section
     let y = 38;
@@ -332,7 +359,7 @@ export async function GET(request: Request, context: any) {
       didDrawPage: (hookData) => {
         // Redraw header on every page after the first
         if (hookData.pageNumber > 1) {
-          drawPdfHeader(doc, title, meta, pageWidth);
+          drawPdfHeader(doc, title, meta, pageWidth, logoData);
         }
       },
     });
@@ -348,7 +375,7 @@ export async function GET(request: Request, context: any) {
     return new NextResponse(pdfBuf as unknown as ArrayBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="vehico_${reportType}_report.pdf"`
+        'Content-Disposition': `attachment; filename="faco_${reportType}_report.pdf"`
       }
     });
   }

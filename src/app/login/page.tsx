@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Car, Shield, Lock, User } from "lucide-react";
+import { AppLogo } from "@/components/shared/AppLogo";
 
 const DEMO_CREDENTIALS = [
   {
     role: "CEO",
     name: "Chinedu Okonkwo",
-    email: "ceo@vehco.com",
+    email: "ceo@facotransport.com",
     password: "ceo_vehco_2026",
     desc: "Full access · Workflow config · Analytics",
     color: "bg-[#0F6B4B] text-white border-[#0F6B4B]",
@@ -17,7 +18,7 @@ const DEMO_CREDENTIALS = [
   {
     role: "Manager",
     name: "Amina Bello",
-    email: "manager@vehco.com",
+    email: "manager@facotransport.com",
     password: "mgr_vehco_2026",
     desc: "Approvals · Reports · Operational review",
     color: "bg-slate-800 text-white border-slate-800",
@@ -26,7 +27,7 @@ const DEMO_CREDENTIALS = [
   {
     role: "Secretary",
     name: "Tunde Adebayo",
-    email: "secretary@vehco.com",
+    email: "secretary@facotransport.com",
     password: "sec_vehco_2026",
     desc: "Data entry · Vehicle & driver registration",
     color: "bg-white text-slate-800 border-slate-300",
@@ -76,17 +77,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
       <div className="hidden lg:flex lg:w-[45%] bg-slate-900 flex-col justify-between p-12">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#0F6B4B] flex items-center justify-center font-bold text-white text-lg">
-            vC
-          </div>
-          <div>
-            <h1 className="font-bold text-lg text-white leading-tight">
-              vehi<span className="text-[#F4B400]">CO</span>
-            </h1>
-            <p className="text-[11px] text-slate-400">Enterprise Fleet Management</p>
-          </div>
-        </div>
+        <AppLogo size={48} showText dark />
 
         <div className="space-y-8">
           <div>
@@ -122,19 +113,14 @@ export default function LoginPage() {
         </div>
 
         <p className="text-[11px] text-slate-600">
-          © {new Date().getFullYear()} vehiCO Enterprise · Fleet Intelligence Systems
+          © {new Date().getFullYear()} Faco Transport · Faco Vehicle Mgt App
         </p>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md space-y-6">
-          <div className="lg:hidden flex items-center gap-3 mb-6">
-            <div className="w-9 h-9 rounded-lg bg-[#0F6B4B] flex items-center justify-center font-bold text-white">
-              vC
-            </div>
-            <h1 className="font-bold text-xl text-slate-900">
-              vehi<span className="text-[#F4B400]">CO</span>
-            </h1>
+          <div className="lg:hidden mb-6">
+            <AppLogo size={44} showText />
           </div>
 
           <div>
@@ -198,7 +184,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@vehco.com"
+                  placeholder="you@facotransport.com"
                   className="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0F6B4B] focus:border-[#0F6B4B] bg-white"
                 />
               </div>
@@ -242,7 +228,7 @@ export default function LoginPage() {
                   Authenticating...
                 </>
               ) : (
-                "Sign In to vehiCO"
+                "Sign In to Faco Vehicle Mgt App"
               )}
             </button>
           </form>

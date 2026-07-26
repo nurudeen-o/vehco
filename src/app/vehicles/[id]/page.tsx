@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { QrCode, ArrowLeft, Fuel, Wrench, DollarSign, UserMinus, UserCheck } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { VehicleSpendAnalysis } from "@/components/analytics/VehicleSpendAnalysis";
 
 export default function VehicleDetailPage({
   params,
@@ -132,6 +133,7 @@ export default function VehicleDetailPage({
             </Button>
           </Link>
           <div className="flex gap-2">
+            <VehicleSpendAnalysis currentVehicleId={vehicle.id} buttonLabel="Vehicle Spend" />
             <Link href={`/vehicles/${vehicle.id}/qr`}>
               <Button variant="outline" size="sm">
                 <QrCode className="w-4 h-4" /> QR Card & Identification

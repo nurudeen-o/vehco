@@ -3,8 +3,8 @@ import "./globals.css";
 import { ConditionalLayout } from "@/components/layout/ConditionalLayout";
 
 export const metadata: Metadata = {
-  title: "vehiCO - Enterprise Fleet Management",
-  description: "Centralized vehicle administration, driver tracking, maintenance, fuel tracking, approvals and QR code identification.",
+  title: "Faco Vehicle Mgt App - Fleet Management",
+  description: "Centralized vehicle administration, driver tracking, maintenance, fuel tracking, approvals and QR code identification for Faco Transport.",
 };
 
 export default function RootLayout({

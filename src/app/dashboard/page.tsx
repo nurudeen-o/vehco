@@ -203,7 +203,7 @@ export default async function DashboardPage() {
             </Card>
 
             <Card className="bg-slate-900 text-white">
-              <h4 className="font-semibold text-base mb-2">vehiCO Quick Actions</h4>
+              <h4 className="font-semibold text-base mb-2">Faco Vehicle Mgt App Quick Actions</h4>
               <p className="text-xs text-slate-400 mb-4">Common data entry tasks for Secretary & Managers.</p>
               <div className="flex flex-col gap-2">
                 <Link href="/vehicles/new" className="px-3 py-2 bg-[#0F6B4B] hover:bg-[#0c573d] text-white text-xs font-medium rounded-lg text-center transition-colors">

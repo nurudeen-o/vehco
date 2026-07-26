@@ -1,8 +1,9 @@
 export const APP_CONFIG = {
-  name: "vehiCO",
-  tagline: "Enterprise Fleet Management System",
-  companyName: "vehiCO Enterprise Operations",
-  supportEmail: "fleet-support@vehco.com",
+  name: "Faco Vehicle Mgt App",
+  shortName: "Faco Vehicle",
+  tagline: "Fleet Management System",
+  companyName: "Faco Transport",
+  supportEmail: "fleet-support@facotransport.com",
 };
 
 export const BRAND_COLORS = {
