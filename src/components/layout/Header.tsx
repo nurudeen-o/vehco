@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, Search, LogOut, Menu } from "lucide-react";
+import { getRoleLabel } from "@/lib/permissions";
 import { useShell } from "./AppShell";
 
 export function Header({ title }: { title?: string }) {
@@ -103,7 +104,7 @@ export function Header({ title }: { title?: string }) {
               <p className="text-xs font-semibold text-slate-800 leading-tight">
                 {user.name}
               </p>
-              <p className="text-[10px] text-slate-500">{user.role}</p>
+              <p className="text-[10px] text-slate-500">{getRoleLabel(user.role)}</p>
             </div>
             <button
               onClick={handleLogout}

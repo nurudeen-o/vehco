@@ -7,7 +7,7 @@ import { AppLogo } from "@/components/shared/AppLogo";
 
 const DEMO_CREDENTIALS = [
   {
-    role: "CEO",
+    role: "Superadmin",
     name: "Chinedu Okonkwo",
     email: "ceo@facotransport.com",
     password: "ceo_vehco_2026",
@@ -16,7 +16,7 @@ const DEMO_CREDENTIALS = [
     badge: "bg-[#F4B400] text-slate-900",
   },
   {
-    role: "Manager",
+    role: "Admin",
     name: "Amina Bello",
     email: "manager@facotransport.com",
     password: "mgr_vehco_2026",

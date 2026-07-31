@@ -83,8 +83,10 @@ export default function SettingsPage() {
     }
   };
 
+  const isSuperadmin = session?.user?.role === "CEO";
+
   const hasPermission = (permission: PermissionKey) =>
-    !!session?.permissions?.includes(permission);
+    isSuperadmin || !!session?.permissions?.includes(permission);
 
   const visibleTabs = TABS.filter((t) => hasPermission(t.permission));
 

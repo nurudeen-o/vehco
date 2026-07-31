@@ -41,16 +41,16 @@ const navigation: NavGroup[] = [
   {
     label: "Fleet",
     items: [
-      { name: "Vehicles", href: "/vehicles", icon: Car },
-      { name: "Drivers", href: "/drivers", icon: Users },
+      { name: "Vehicles", href: "/vehicles", icon: Car, permission: "REGISTER_VEHICLE" },
+      { name: "Drivers", href: "/drivers", icon: Users, permission: "REGISTER_DRIVER" },
     ],
   },
   {
     label: "Operations",
     items: [
-      { name: "Fuel Tracking", href: "/fuel", icon: Fuel },
-      { name: "Maintenance", href: "/maintenance", icon: Wrench },
-      { name: "Expenses", href: "/expenses", icon: DollarSign },
+      { name: "Fuel Tracking", href: "/fuel", icon: Fuel, permission: "RECORD_FUEL" },
+      { name: "Maintenance", href: "/maintenance", icon: Wrench, permission: "RECORD_MAINTENANCE" },
+      { name: "Expenses", href: "/expenses", icon: DollarSign, permission: "RECORD_EXPENSE" },
       { name: "Documents", href: "/documents", icon: FileText, permission: "VIEW_DOCUMENTS" },
     ],
   },

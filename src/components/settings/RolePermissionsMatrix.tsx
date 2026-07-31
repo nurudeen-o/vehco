@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import {
   PERMISSION_LABELS,
   PERMISSION_GROUPS,
+  ROLE_LABELS,
   type PermissionKey,
   type UserRole,
 } from "@/lib/permissions";
@@ -24,11 +25,7 @@ type MatrixResponse = {
   canEdit: boolean;
 };
 
-const ROLE_LABELS: Record<UserRole, string> = {
-  CEO: "CEO (Superadmin)",
-  MANAGER: "Manager",
-  SECRETARY: "Secretary",
-};
+
 
 export function RolePermissionsMatrix() {
   const [data, setData] = useState<MatrixResponse | null>(null);

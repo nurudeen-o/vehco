@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Check, X, ShieldAlert } from "lucide-react";
+import { getRoleLabel } from "@/lib/permissions";
 import { formatDate } from "@/lib/utils";
 
 export default function ApprovalsPage() {
@@ -146,7 +147,7 @@ export default function ApprovalsPage() {
                         {app.entityType}
                       </td>
                       <td className="py-3 px-4 text-slate-700">
-                        {app.requestedBy?.name} ({app.requestedBy?.role})
+                        {app.requestedBy?.name} ({getRoleLabel(app.requestedBy?.role)})
                       </td>
                       <td className="py-3 px-4 text-slate-600 text-xs">
                         {app.comments || "N/A"}

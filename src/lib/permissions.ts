@@ -2,6 +2,16 @@ export type UserRole = "CEO" | "MANAGER" | "SECRETARY";
 
 export const USER_ROLES: UserRole[] = ["CEO", "MANAGER", "SECRETARY"];
 
+export const ROLE_LABELS: Record<UserRole, string> = {
+  CEO: "Superadmin",
+  MANAGER: "Admin",
+  SECRETARY: "Secretary",
+};
+
+export function getRoleLabel(role: string): string {
+  return ROLE_LABELS[role as UserRole] || role;
+}
+
 export const PERMISSION_KEYS = [
   "MANAGE_USERS",
   "MANAGE_ROLE_PERMISSIONS",

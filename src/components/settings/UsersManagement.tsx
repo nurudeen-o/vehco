@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { PERMISSION_LABELS, PERMISSION_GROUPS, type PermissionKey } from "@/lib/permissions";
+import {
+  PERMISSION_LABELS,
+  PERMISSION_GROUPS,
+  getRoleLabel,
+  type PermissionKey,
+} from "@/lib/permissions";
 import {
   Plus,
   X,
@@ -34,9 +39,9 @@ type UserDetail = UserListItem & {
 };
 
 const ROLES = [
-  { value: "CEO", label: "CEO (Superadmin)" },
-  { value: "MANAGER", label: "Manager" },
-  { value: "SECRETARY", label: "Secretary" },
+  { value: "CEO", label: getRoleLabel("CEO") },
+  { value: "MANAGER", label: getRoleLabel("MANAGER") },
+  { value: "SECRETARY", label: getRoleLabel("SECRETARY") },
 ];
 
 function statusBadge(status: string) {
@@ -304,7 +309,7 @@ export function UsersManagement({ currentUserId }: { currentUserId: string }) {
                       )}
                     </td>
                     <td className="py-3 px-3 text-slate-600 text-xs">{u.email}</td>
-                    <td className="py-3 px-3 text-slate-700 text-xs font-medium">{u.role}</td>
+                    <td className="py-3 px-3 text-slate-700 text-xs font-medium">{getRoleLabel(u.role)}</td>
                     <td className="py-3 px-3">{statusBadge(u.status)}</td>
                     <td className="py-3 px-3 text-xs text-slate-500">
                       {u.overrideCount > 0 ? `${u.overrideCount} set` : "—"}
@@ -432,7 +437,7 @@ export function UsersManagement({ currentUserId }: { currentUserId: string }) {
               <div>
                 <h3 className="font-bold text-slate-900">Feature Access</h3>
                 <p className="text-xs text-slate-500">
-                  {featureUser.name} · {featureUser.role}
+                  {featureUser.name} · {getRoleLabel(featureUser.role)}
                 </p>
               </div>
               <button onClick={() => setFeatureOpen(false)} className="text-slate-400 hover:text-slate-600">

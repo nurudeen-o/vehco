@@ -20,10 +20,6 @@ function readSession(request: NextRequest): SessionPayload | null {
   }
 }
 
-function isLeadership(role?: string) {
-  return role === "CEO" || role === "MANAGER";
-}
-
 export function middleware(request: NextRequest) {
   const session = readSession(request);
   const { pathname } = request.nextUrl;
@@ -48,41 +44,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // Settings: CEO / Manager only
-  if (pathname.startsWith("/settings") || pathname.startsWith("/api/settings")) {
-    if (!session || !isLeadership(session.role)) {
-      if (pathname.startsWith("/api/")) {
-        return NextResponse.json(
-          { error: "Forbidden. CEO or Manager only." },
-          { status: 403 }
-        );
-      }
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-  }
-
-  // Audit log downloads: CEO / Manager only
-  if (pathname.startsWith("/api/audit-logs")) {
-    if (!session || !isLeadership(session.role)) {
-      return NextResponse.json(
-        { error: "Forbidden. Only CEO and Manager can download audit logs." },
-        { status: 403 }
-      );
-    }
-  }
-
-  // User management and role-permission APIs: CEO only (coarse guard; APIs enforce MANAGE_*)
-  if (
-    pathname.startsWith("/api/users") ||
-    pathname.startsWith("/api/roles/permissions")
-  ) {
-    if (!session || session.role !== "CEO") {
-      return NextResponse.json(
-        { error: "Forbidden. CEO only." },
-        { status: 403 }
-      );
-    }
-  }
+  // NOTE: Role/permission enforcement is intentionally handled by Node handlers and pages,
+  // not middleware. The session cookie now stores only userId, so role here would be stale.
+  // getSession() re-loads the user from the DB on every request, and APIs use requirePermission().
 
   return NextResponse.next();
 }
