@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { hasPermission } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import jsPDF from "jspdf";
@@ -21,12 +21,8 @@ function getLogoData(): string | null {
 
 export async function GET(request: Request) {
   const session = await getSession();
-  if (!session || !hasPermission(session.role, "DOWNLOAD_AUDIT_LOGS")) {
-    return NextResponse.json(
-      { error: "Forbidden. Only CEO and Manager can download audit logs." },
-      { status: 403 }
-    );
-  }
+  const gate = await requirePermission(session, "DOWNLOAD_AUDIT_LOGS");
+  if (!gate.ok) return gate.response;
 
   const { searchParams } = new URL(request.url);
   const format = (searchParams.get("format") || "csv").toLowerCase();
@@ -136,7 +132,7 @@ export async function GET(request: Request) {
     }
 
     doc.setFontSize(9);
-    doc.text(`Exported by ${session.name} (${session.role})`, pageWidth - 14, 12, {
+    doc.text(`Exported by ${gate.session.name} (${gate.session.role})`, pageWidth - 14, 12, {
       align: "right",
     });
     doc.text(formatDate(new Date()), pageWidth - 14, 18, { align: "right" });

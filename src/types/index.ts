@@ -1,4 +1,24 @@
 export type UserRole = "CEO" | "MANAGER" | "SECRETARY";
+export type UserStatus = "ACTIVE" | "SUSPENDED";
+
+export type PermissionKey =
+  | "MANAGE_USERS"
+  | "MANAGE_ROLE_PERMISSIONS"
+  | "CONFIGURE_WORKFLOW"
+  | "VIEW_SETTINGS"
+  | "MANAGE_SETTINGS"
+  | "REGISTER_VEHICLE"
+  | "REGISTER_DRIVER"
+  | "EDIT_VEHICLE"
+  | "RECORD_FUEL"
+  | "RECORD_MAINTENANCE"
+  | "RECORD_EXPENSE"
+  | "APPROVE_MAINTENANCE"
+  | "VIEW_APPROVALS"
+  | "EXPORT_REPORTS"
+  | "VIEW_ANALYTICS"
+  | "DOWNLOAD_AUDIT_LOGS"
+  | "VIEW_DOCUMENTS";
 
 export type VehicleStatus = "ACTIVE" | "INACTIVE" | "MAINTENANCE" | "ARCHIVED";
 
@@ -14,6 +34,7 @@ export interface UserType {
   name: string;
   email: string;
   role: UserRole;
+  status: UserStatus;
   branchId?: string | null;
 }
 

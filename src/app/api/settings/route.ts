@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { hasPermission } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 // In-memory fallback when no SystemConfig table exists yet.
@@ -45,9 +45,8 @@ async function loadSettings(): Promise<SettingsPayload> {
 
 export async function GET() {
   const session = await getSession();
-  if (!session || !hasPermission(session.role, "VIEW_SETTINGS")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const gate = await requirePermission(session, "VIEW_SETTINGS");
+  if (!gate.ok) return gate.response;
 
   const settings = await loadSettings();
   return NextResponse.json(settings);
@@ -55,9 +54,8 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   const session = await getSession();
-  if (!session || !hasPermission(session.role, "MANAGE_SETTINGS")) {
-    return NextResponse.json({ error: "Forbidden. CEO or Manager only." }, { status: 403 });
-  }
+  const gate = await requirePermission(session, "MANAGE_SETTINGS");
+  if (!gate.ok) return gate.response;
 
   try {
     const body = await req.json();
@@ -71,7 +69,7 @@ export async function PUT(req: Request) {
 
     await prisma.auditLog.create({
       data: {
-        userId: session.id,
+        userId: gate.session.id,
         action: "UPDATE_SETTINGS",
         entity: "SystemSettings",
         entityId: "global",

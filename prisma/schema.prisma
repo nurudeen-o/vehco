@@ -21,20 +21,46 @@ model Branch {
 }
 
 model User {
-  id                 String              @id @default(uuid())
+  id                 String                   @id @default(uuid())
   name               String
-  email              String              @unique
+  email              String                   @unique
   password           String
-  role               String              @default("SECRETARY")
+  role               String                   @default("SECRETARY")
+  status             String                   @default("ACTIVE") // ACTIVE | SUSPENDED
+  suspendedAt        DateTime?
+  suspendedReason    String?
   branchId           String?
-  branch             Branch?             @relation(fields: [branchId], references: [id])
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  approvedRecords    MaintenanceRecord[] @relation("ApprovedBy")
-  requestedApprovals Approval[]          @relation("RequestedBy")
-  givenApprovals     Approval[]          @relation("Approver")
+  branch             Branch?                  @relation(fields: [branchId], references: [id])
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  approvedRecords    MaintenanceRecord[]      @relation("ApprovedBy")
+  requestedApprovals Approval[]               @relation("RequestedBy")
+  givenApprovals     Approval[]               @relation("Approver")
   notifications      Notification[]
   auditLogs          AuditLog[]
+  permissionOverrides UserPermissionOverride[]
+}
+
+model RolePermission {
+  id          String   @id @default(uuid())
+  role        String
+  permission  String
+  allowed     Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+
+  @@unique([role, permission])
+}
+
+model UserPermissionOverride {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission String
+  allowed    Boolean
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, permission])
 }
 
 model Vehicle {

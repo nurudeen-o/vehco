@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const records = await prisma.maintenanceRecord.findMany({
       include: { vehicle: true, parts: true },
       orderBy: { createdAt: "desc" },
@@ -15,6 +22,10 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await getSession();
+    const gate = await requirePermission(session, "RECORD_MAINTENANCE");
+    if (!gate.ok) return gate.response;
+
     const body = await req.json();
     const record = await prisma.maintenanceRecord.create({
       data: {
@@ -29,14 +40,11 @@ export async function POST(req: Request) {
       },
     });
 
-    const { getSession } = await import("@/lib/auth");
-    const session = await getSession();
-
     await prisma.approval.create({
       data: {
         entityType: "MAINTENANCE",
         entityId: record.id,
-        requestedById: session?.id || (await prisma.user.findFirst({ where: { role: "SECRETARY" } }))?.id || "",
+        requestedById: gate.session.id,
         status: "PENDING",
         comments: `Maintenance request for ${record.serviceType}`,
       },
@@ -44,11 +52,11 @@ export async function POST(req: Request) {
 
     await prisma.auditLog.create({
       data: {
-        userId: session?.id || null,
+        userId: gate.session.id,
         action: "RECORD_MAINTENANCE",
         entity: "MaintenanceRecord",
         entityId: record.id,
-        details: `Requested maintenance for vehicle ${body.vehicleId}: ${record.serviceType} by ${session?.name || "System"}`,
+        details: `Requested maintenance for vehicle ${body.vehicleId}: ${record.serviceType} by ${gate.session.name}`,
       },
     });
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 
 export async function PATCH(
   req: Request,
@@ -8,9 +9,8 @@ export async function PATCH(
 ) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "CEO" && session.role !== "MANAGER")) {
-      return NextResponse.json({ error: "Access denied. Managers and CEOs only." }, { status: 403 });
-    }
+    const gate = await requirePermission(session, "APPROVE_MAINTENANCE");
+    if (!gate.ok) return gate.response;
 
     const { id } = await params;
     const body = await req.json();
@@ -25,7 +25,7 @@ export async function PATCH(
       data: {
         status,
         comments: comments || null,
-        approverId: session.id,
+        approverId: gate.session.id,
       },
     });
 
@@ -34,18 +34,18 @@ export async function PATCH(
         where: { id: approval.entityId },
         data: {
           status,
-          approvedById: session.id,
+          approvedById: gate.session.id,
         },
       });
     }
 
     await prisma.auditLog.create({
       data: {
-        userId: session.id,
+        userId: gate.session.id,
         action: `MAINTENANCE_${status}`,
         entity: approval.entityType,
         entityId: approval.entityId,
-        details: `${approval.entityType} request #${approval.entityId.slice(0, 8)} was ${status.toLowerCase()} by ${session.name} (${session.role})`,
+        details: `${approval.entityType} request #${approval.entityId.slice(0, 8)} was ${status.toLowerCase()} by ${gate.session.name} (${gate.session.role})`,
       },
     });
 

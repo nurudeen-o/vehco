@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../src/lib/password";
+import { buildDefaultRolePermissionRows } from "../src/lib/permissions";
 
 const prisma = new PrismaClient();
 
@@ -15,6 +16,8 @@ async function main() {
   await prisma.vehicleAssignment.deleteMany();
   await prisma.vehicle.deleteMany();
   await prisma.driver.deleteMany();
+  await prisma.userPermissionOverride.deleteMany();
+  await prisma.rolePermission.deleteMany();
   await prisma.user.deleteMany();
   await prisma.branch.deleteMany();
 
@@ -32,12 +35,23 @@ async function main() {
     hashPassword("sec_vehco_2026"),
   ]);
 
+  // Seed default role permission matrix (CEO Superadmin can edit later)
+  const rolePermRows = buildDefaultRolePermissionRows();
+  await prisma.rolePermission.createMany({
+    data: rolePermRows.map((r) => ({
+      role: r.role,
+      permission: r.permission,
+      allowed: r.allowed,
+    })),
+  });
+
   const ceo = await prisma.user.create({
     data: {
       name: "Chinedu Okonkwo",
       email: "ceo@facotransport.com",
       password: ceoPassword,
       role: "CEO",
+      status: "ACTIVE",
       branchId: mainBranch.id,
     },
   });
@@ -48,6 +62,7 @@ async function main() {
       email: "manager@facotransport.com",
       password: managerPassword,
       role: "MANAGER",
+      status: "ACTIVE",
       branchId: mainBranch.id,
     },
   });
@@ -58,6 +73,7 @@ async function main() {
       email: "secretary@facotransport.com",
       password: secretaryPassword,
       role: "SECRETARY",
+      status: "ACTIVE",
       branchId: mainBranch.id,
     },
   });

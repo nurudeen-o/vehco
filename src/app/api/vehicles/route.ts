@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const vehicles = await prisma.vehicle.findMany({
       where: { deletedAt: null },
       include: { assignedDriver: true, branch: true },
@@ -16,6 +23,10 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await getSession();
+    const gate = await requirePermission(session, "REGISTER_VEHICLE");
+    if (!gate.ok) return gate.response;
+
     const body = await req.json();
     const vehicle = await prisma.vehicle.create({
       data: {
@@ -33,16 +44,13 @@ export async function POST(req: Request) {
       },
     });
 
-    const { getSession } = await import("@/lib/auth");
-    const session = await getSession();
-
     await prisma.auditLog.create({
       data: {
-        userId: session?.id || null,
+        userId: gate.session.id,
         action: "CREATE_VEHICLE",
         entity: "Vehicle",
         entityId: vehicle.id,
-        details: `Registered new vehicle ${vehicle.code} (${vehicle.name}) by ${session?.name || "System"}`,
+        details: `Registered new vehicle ${vehicle.code} (${vehicle.name}) by ${gate.session.name}`,
       },
     });
 

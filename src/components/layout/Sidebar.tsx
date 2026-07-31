@@ -18,14 +18,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { hasPermission } from "@/lib/permissions";
+import { hasPermission, type PermissionKey } from "@/lib/permissions";
 import { AppLogo } from "@/components/shared/AppLogo";
 
 type NavItem = {
   name: string;
   href: string;
   icon: LucideIcon;
-  permission?: "VIEW_SETTINGS";
+  permission?: PermissionKey;
 };
 
 type NavGroup = {
@@ -51,15 +51,15 @@ const navigation: NavGroup[] = [
       { name: "Fuel Tracking", href: "/fuel", icon: Fuel },
       { name: "Maintenance", href: "/maintenance", icon: Wrench },
       { name: "Expenses", href: "/expenses", icon: DollarSign },
-      { name: "Documents", href: "/documents", icon: FileText },
+      { name: "Documents", href: "/documents", icon: FileText, permission: "VIEW_DOCUMENTS" },
     ],
   },
   {
     label: "Governance",
     items: [
-      { name: "Approvals", href: "/approvals", icon: CheckSquare },
-      { name: "Analytics", href: "/analytics", icon: BarChart3 },
-      { name: "Reports", href: "/reports", icon: FileText },
+      { name: "Approvals", href: "/approvals", icon: CheckSquare, permission: "VIEW_APPROVALS" },
+      { name: "Analytics", href: "/analytics", icon: BarChart3, permission: "VIEW_ANALYTICS" },
+      { name: "Reports", href: "/reports", icon: FileText, permission: "EXPORT_REPORTS" },
       {
         name: "Settings",
         href: "/settings",
@@ -78,18 +78,25 @@ type SidebarProps = {
 export function Sidebar({ open = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
+  const [permissions, setPermissions] = useState<PermissionKey[] | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/session")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.user?.role) setRole(data.user.role);
+        if (data?.permissions) setPermissions(data.permissions);
       })
-      .catch(() => setRole(null));
+      .catch(() => {
+        setRole(null);
+        setPermissions(null);
+      });
   }, []);
 
   const isItemVisible = (item: NavItem) => {
     if (!item.permission) return true;
+    if (permissions) return permissions.includes(item.permission);
+    // Fallback before session loads
     if (!role) return false;
     return hasPermission(role, item.permission);
   };

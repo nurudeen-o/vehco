@@ -71,6 +71,19 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // User management and role-permission APIs: CEO only (coarse guard; APIs enforce MANAGE_*)
+  if (
+    pathname.startsWith("/api/users") ||
+    pathname.startsWith("/api/roles/permissions")
+  ) {
+    if (!session || session.role !== "CEO") {
+      return NextResponse.json(
+        { error: "Forbidden. CEO only." },
+        { status: 403 }
+      );
+    }
+  }
+
   return NextResponse.next();
 }
 
