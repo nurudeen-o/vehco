@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { requirePermission } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions-server";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import jsPDF from "jspdf";

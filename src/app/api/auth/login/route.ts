@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateCredentials, createSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getEffectivePermissions } from "@/lib/permissions";
+import { getEffectivePermissions } from "@/lib/permissions-server";
 
 export async function POST(req: Request) {
   try {

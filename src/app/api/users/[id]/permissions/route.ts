@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import {
-  PERMISSION_KEYS,
-  type PermissionKey,
-  requirePermission,
-} from "@/lib/permissions";
+import { PERMISSION_KEYS, type PermissionKey } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions-server";
 
 export async function GET(
   _req: Request,

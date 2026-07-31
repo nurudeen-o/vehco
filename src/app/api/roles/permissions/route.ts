@@ -8,12 +8,12 @@ import {
   PERMISSION_KEYS,
   PERMISSION_LABELS,
   type PermissionKey,
-  requirePermission,
   USER_ROLES,
   type UserRole,
   defaultAllows,
   buildDefaultRolePermissionRows,
 } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions-server";
 
 async function ensureRolePermissionsSeeded() {
   const count = await prisma.rolePermission.count();

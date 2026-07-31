@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 import { verifyPassword } from "./password";
-import { getEffectivePermissions, type PermissionKey } from "./permissions";
+import { getEffectivePermissions } from "./permissions-server";
+import type { PermissionKey } from "./permissions";
 
 const SESSION_COOKIE = "vehco_session";
 

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isValidRole, requirePermission } from "@/lib/permissions";
+import { isValidRole } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions-server";
 
 export async function GET(
   _req: Request,
