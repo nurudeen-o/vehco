@@ -30,10 +30,27 @@ async function main() {
   });
 
   const [ceoPassword, managerPassword, secretaryPassword] = await Promise.all([
-    hashPassword("ceo_vehco_2026"),
-    hashPassword("mgr_vehco_2026"),
-    hashPassword("sec_vehco_2026"),
+    hashPassword("ceo_facotransport_2026"),
+    hashPassword("mgr_facotransport_2026"),
+    hashPassword("sec_facotransport_2026"),
   ]);
+
+  // Ensure system roles exist
+  await prisma.role.upsert({
+    where: { name: "CEO" },
+    create: { name: "CEO", label: "Superadmin", isSystem: true },
+    update: { label: "Superadmin", isSystem: true },
+  });
+  await prisma.role.upsert({
+    where: { name: "MANAGER" },
+    create: { name: "MANAGER", label: "Admin", isSystem: true },
+    update: { label: "Admin", isSystem: true },
+  });
+  await prisma.role.upsert({
+    where: { name: "SECRETARY" },
+    create: { name: "SECRETARY", label: "Secretary", isSystem: true },
+    update: { label: "Secretary", isSystem: true },
+  });
 
   // Seed default role permission matrix (CEO Superadmin can edit later)
   const rolePermRows = buildDefaultRolePermissionRows();

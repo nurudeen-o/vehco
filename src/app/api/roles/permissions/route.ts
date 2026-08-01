@@ -8,10 +8,9 @@ import {
   PERMISSION_KEYS,
   PERMISSION_LABELS,
   type PermissionKey,
-  USER_ROLES,
-  type UserRole,
   defaultAllows,
   buildDefaultRolePermissionRows,
+  getRoleLabel,
 } from "@/lib/permissions";
 import { requirePermission } from "@/lib/permissions-server";
 
@@ -34,34 +33,25 @@ export async function GET() {
     // Managers may view matrix read-only if they have VIEW_SETTINGS; edits need MANAGE_ROLE_PERMISSIONS
     const gate = await requirePermission(session, "VIEW_SETTINGS");
     if (!gate.ok) {
-      // CEO always has manage; try manage as fallback for pure admin
       const adminGate = await requirePermission(session, "MANAGE_ROLE_PERMISSIONS");
       if (!adminGate.ok) return gate.response;
     }
 
     await ensureRolePermissionsSeeded();
 
+    const roles = await prisma.role.findMany({ orderBy: { createdAt: "asc" } });
+    const roleNames = roles.map((r) => r.name);
+
     const rows = await prisma.rolePermission.findMany();
-    const map = new Map(
-      rows.map((r) => [`${r.role}:${r.permission}`, r.allowed])
-    );
+    const map = new Map(rows.map((r) => [`${r.role}:${r.permission}`, r.allowed]));
 
     const matrix: Record<
-      UserRole,
+      string,
       Record<PermissionKey, { allowed: boolean; locked: boolean }>
-    > = {
-      CEO: {} as Record<PermissionKey, { allowed: boolean; locked: boolean }>,
-      MANAGER: {} as Record<
-        PermissionKey,
-        { allowed: boolean; locked: boolean }
-      >,
-      SECRETARY: {} as Record<
-        PermissionKey,
-        { allowed: boolean; locked: boolean }
-      >,
-    };
+    > = {};
 
-    for (const role of USER_ROLES) {
+    for (const role of roleNames) {
+      matrix[role] = {} as Record<PermissionKey, { allowed: boolean; locked: boolean }>;
       for (const permission of PERMISSION_KEYS) {
         const locked = isLockedPermission(role, permission);
         const key = `${role}:${permission}`;
@@ -75,7 +65,8 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      roles: USER_ROLES,
+      roles: roleNames,
+      roleLabels: Object.fromEntries(roles.map((r) => [r.name, r.label])),
       permissions: PERMISSION_KEYS,
       labels: PERMISSION_LABELS,
       groups: PERMISSION_GROUPS,
@@ -110,12 +101,16 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "No updates provided" }, { status: 400 });
     }
 
+    const validRoles = new Set(
+      (await prisma.role.findMany({ select: { name: true } })).map((r) => r.name)
+    );
+
     const applied: { role: string; permission: string; allowed: boolean }[] = [];
 
     for (const item of updates) {
       const role = String(item.role || "").toUpperCase();
       const permission = String(item.permission || "") as PermissionKey;
-      if (!USER_ROLES.includes(role as UserRole)) {
+      if (!validRoles.has(role)) {
         return NextResponse.json({ error: `Invalid role: ${role}` }, { status: 400 });
       }
       if (!PERMISSION_KEYS.includes(permission)) {
@@ -125,7 +120,6 @@ export async function PUT(req: Request) {
         );
       }
       if (isLockedPermission(role, permission)) {
-        // Skip locked cells rather than erroring the whole batch
         continue;
       }
       const allowed = !!item.allowed;
@@ -147,19 +141,21 @@ export async function PUT(req: Request) {
       applied.push({ role, permission, allowed });
     }
 
-    await prisma.auditLog.create({
-      data: {
-        userId: gate.session.id,
-        action: "UPDATE_ROLE_PERMISSIONS",
-        entity: "RolePermission",
-        entityId: "matrix",
-        details: `${gate.session.name} updated role permissions (${applied.length} cells): ${applied
-          .map((a) => `${a.role}.${a.permission}=${a.allowed}`)
-          .join(", ")}`,
-      },
-    });
+    if (applied.length > 0) {
+      const changedRoles = [...new Set(applied.map((a) => a.role))];
+      const roleLabelList = changedRoles.map((r) => getRoleLabel(r)).join(", ");
+      await prisma.auditLog.create({
+        data: {
+          userId: gate.session.id,
+          action: "UPDATE_ROLE_PERMISSIONS",
+          entity: "RolePermission",
+          entityId: "matrix",
+          details: `${gate.session.name} updated permissions for ${roleLabelList}`,
+        },
+      });
+    }
 
-    return NextResponse.json({ ok: true, applied });
+    return NextResponse.json({ ok: true, applied: applied.length });
   } catch {
     return NextResponse.json(
       { error: "Failed to update role permissions" },

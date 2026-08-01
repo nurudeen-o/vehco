@@ -9,7 +9,7 @@ type SessionPayload = {
 };
 
 function readSession(request: NextRequest): SessionPayload | null {
-  const cookie = request.cookies.get("vehco_session");
+  const cookie = request.cookies.get("facotransport_session");
   if (!cookie?.value) return null;
   try {
     return JSON.parse(

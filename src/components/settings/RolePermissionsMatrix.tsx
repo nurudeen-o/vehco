@@ -7,17 +7,19 @@ import { Badge } from "@/components/ui/Badge";
 import {
   PERMISSION_LABELS,
   PERMISSION_GROUPS,
-  ROLE_LABELS,
+  getRoleLabel,
   type PermissionKey,
-  type UserRole,
 } from "@/lib/permissions";
-import { Check, X, Loader2, ShieldAlert, Save, RotateCcw } from "lucide-react";
+import { Check, X, Loader2, ShieldAlert, Save, RotateCcw, Plus, Trash2 } from "lucide-react";
 
 type MatrixCell = { allowed: boolean; locked: boolean };
-type Matrix = Record<UserRole, Record<PermissionKey, MatrixCell>>;
+type Matrix = Record<string, Record<PermissionKey, MatrixCell>>;
+
+type RoleItem = { name: string; label: string; isSystem: boolean; userCount: number };
 
 type MatrixResponse = {
-  roles: UserRole[];
+  roles: string[];
+  roleLabels: Record<string, string>;
   permissions: PermissionKey[];
   labels: Record<PermissionKey, string>;
   groups: { label: string; permissions: PermissionKey[] }[];
@@ -25,14 +27,18 @@ type MatrixResponse = {
   canEdit: boolean;
 };
 
-
-
 export function RolePermissionsMatrix() {
   const [data, setData] = useState<MatrixResponse | null>(null);
+  const [roles, setRoles] = useState<RoleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({ name: "", label: "", cloneFrom: "" });
+  const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const fetchMatrix = async () => {
     try {
@@ -48,11 +54,23 @@ export function RolePermissionsMatrix() {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const res = await fetch("/api/roles");
+      if (!res.ok) throw new Error("Failed to load roles");
+      const json: RoleItem[] = await res.json();
+      setRoles(json);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load roles");
+    }
+  };
+
   useEffect(() => {
     fetchMatrix();
+    fetchRoles();
   }, []);
 
-  const toggleCell = (role: UserRole, permission: PermissionKey) => {
+  const toggleCell = (role: string, permission: PermissionKey) => {
     if (!data) return;
     const cell = data.matrix[role][permission];
     if (cell.locked) return;
@@ -70,8 +88,9 @@ export function RolePermissionsMatrix() {
 
   const resetToDefaults = () => {
     if (!data) return;
-    const next: Matrix = { CEO: {}, MANAGER: {}, SECRETARY: {} } as Matrix;
+    const next: Matrix = {};
     for (const role of data.roles) {
+      next[role] = {} as Record<PermissionKey, MatrixCell>;
       for (const permission of data.permissions) {
         const cell = data.matrix[role][permission];
         next[role][permission] = { allowed: cell.locked ? true : false, locked: cell.locked };
@@ -85,7 +104,7 @@ export function RolePermissionsMatrix() {
     setSaving(true);
     setError("");
     try {
-      const updates: { role: UserRole; permission: PermissionKey; allowed: boolean }[] = [];
+      const updates: { role: string; permission: PermissionKey; allowed: boolean }[] = [];
       for (const role of data.roles) {
         for (const permission of data.permissions) {
           const cell = data.matrix[role][permission];
@@ -110,6 +129,44 @@ export function RolePermissionsMatrix() {
     }
   };
 
+  const handleCreateRole = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setCreating(true);
+    try {
+      const res = await fetch("/api/roles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(createForm),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to create role");
+      setShowCreate(false);
+      setCreateForm({ name: "", label: "", cloneFrom: "" });
+      await Promise.all([fetchMatrix(), fetchRoles()]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create role");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDeleteRole = async (name: string) => {
+    if (!confirm(`Delete role ${getRoleLabel(name)}? This cannot be undone.`)) return;
+    setError("");
+    setDeleting(name);
+    try {
+      const res = await fetch(`/api/roles?name=${encodeURIComponent(name)}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to delete role");
+      await Promise.all([fetchMatrix(), fetchRoles()]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete role");
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -130,6 +187,8 @@ export function RolePermissionsMatrix() {
     );
   }
 
+  const getLabel = (role: string) => data.roleLabels[role] || getRoleLabel(role);
+
   return (
     <div className="space-y-5">
       {error && (
@@ -143,10 +202,103 @@ export function RolePermissionsMatrix() {
         </div>
       )}
 
+      {data.canEdit && (
+        <Card>
+          <CardHeader
+            title="Roles"
+            subtitle="Create custom roles and manage their permission matrix."
+            action={
+              <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>
+                <Plus className="w-4 h-4" /> Create Role
+              </Button>
+            }
+          />
+
+          {showCreate && (
+            <form onSubmit={handleCreateRole} className="mb-4 p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-sm text-slate-800">Create custom role</h4>
+                <button type="button" onClick={() => setShowCreate(false)} className="text-slate-400 hover:text-slate-600">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  required
+                  type="text"
+                  placeholder="Role key (e.g. DISPATCHER)"
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, "") })}
+                  className="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F6B4B]"
+                />
+                <input
+                  required
+                  type="text"
+                  placeholder="Display label (e.g. Dispatcher)"
+                  value={createForm.label}
+                  onChange={(e) => setCreateForm({ ...createForm, label: e.target.value })}
+                  className="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F6B4B]"
+                />
+                <select
+                  value={createForm.cloneFrom}
+                  onChange={(e) => setCreateForm({ ...createForm, cloneFrom: e.target.value })}
+                  className="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F6B4B]"
+                >
+                  <option value="">Empty matrix</option>
+                  {roles.map((r) => (
+                    <option key={r.name} value={r.name}>
+                      Copy from {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setShowCreate(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" size="sm" disabled={creating}>
+                  {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  Create
+                </Button>
+              </div>
+            </form>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            {roles.map((role) => (
+              <div
+                key={role.name}
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+              >
+                <span className="font-semibold text-slate-700">{role.label}</span>
+                <span className="text-slate-400 font-mono">{role.name}</span>
+                {role.isSystem ? (
+                  <Badge variant="neutral" className="text-[10px]">System</Badge>
+                ) : (
+                  <>
+                    <Badge variant={role.userCount > 0 ? "warning" : "neutral"} className="text-[10px]">
+                      {role.userCount} user{role.userCount === 1 ? "" : "s"}
+                    </Badge>
+                    <button
+                      onClick={() => handleDeleteRole(role.name)}
+                      disabled={role.userCount > 0 || deleting === role.name}
+                      className="text-slate-400 hover:text-rose-600 disabled:opacity-40 disabled:hover:text-slate-400"
+                      title={role.userCount > 0 ? "Role is assigned to users" : "Delete role"}
+                    >
+                      {deleting === role.name ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                    </button>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <Card>
         <CardHeader
           title="Role Permissions Matrix"
-          subtitle="Toggle which features each role can access. Locked CEO cells cannot be changed."
+          subtitle="Toggle which features each role can access. Locked Superadmin cells cannot be changed."
           action={
             data.canEdit ? (
               <div className="flex gap-2">
@@ -171,7 +323,7 @@ export function RolePermissionsMatrix() {
                 <th className="py-3 px-4 min-w-[14rem]">Feature</th>
                 {data.roles.map((role) => (
                   <th key={role} className="py-3 px-4 text-center min-w-[7rem]">
-                    {ROLE_LABELS[role]}
+                    {getLabel(role)}
                   </th>
                 ))}
               </tr>
@@ -200,7 +352,7 @@ export function RolePermissionsMatrix() {
                         return (
                           <td key={role} className="py-3 px-4 text-center">
                             {cell.locked ? (
-                              <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-400" title="Locked for CEO">
+                              <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-400" title="Locked for Superadmin">
                                 <ShieldAlert className="w-4 h-4" />
                               </span>
                             ) : data.canEdit ? (

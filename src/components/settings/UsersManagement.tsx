@@ -38,11 +38,11 @@ type UserDetail = UserListItem & {
   permissionOverrides: { permission: PermissionKey; allowed: boolean }[];
 };
 
-const ROLES = [
-  { value: "CEO", label: getRoleLabel("CEO") },
-  { value: "MANAGER", label: getRoleLabel("MANAGER") },
-  { value: "SECRETARY", label: getRoleLabel("SECRETARY") },
-];
+type RoleItem = { name: string; label: string; isSystem: boolean };
+
+function roleLabel(roles: RoleItem[], roleName: string): string {
+  return roles.find((r) => r.name === roleName)?.label || getRoleLabel(roleName);
+}
 
 function statusBadge(status: string) {
   if (status === "SUSPENDED") return <Badge variant="danger">Suspended</Badge>;
@@ -51,6 +51,7 @@ function statusBadge(status: string) {
 
 export function UsersManagement({ currentUserId }: { currentUserId: string }) {
   const [users, setUsers] = useState<UserListItem[]>([]);
+  const [roles, setRoles] = useState<RoleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -88,8 +89,20 @@ export function UsersManagement({ currentUserId }: { currentUserId: string }) {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const res = await fetch("/api/roles");
+      if (!res.ok) throw new Error("Failed to load roles");
+      const data = await res.json();
+      setRoles(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load roles");
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchRoles();
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -261,8 +274,8 @@ export function UsersManagement({ currentUserId }: { currentUserId: string }) {
                 onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
                 className="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F6B4B]"
               >
-                {ROLES.map((r) => (
-                  <option key={r.value} value={r.value}>
+                {roles.map((r) => (
+                  <option key={r.name} value={r.name}>
                     {r.label}
                   </option>
                 ))}
@@ -309,7 +322,7 @@ export function UsersManagement({ currentUserId }: { currentUserId: string }) {
                       )}
                     </td>
                     <td className="py-3 px-3 text-slate-600 text-xs">{u.email}</td>
-                    <td className="py-3 px-3 text-slate-700 text-xs font-medium">{getRoleLabel(u.role)}</td>
+                    <td className="py-3 px-3 text-slate-700 text-xs font-medium">{roleLabel(roles, u.role)}</td>
                     <td className="py-3 px-3">{statusBadge(u.status)}</td>
                     <td className="py-3 px-3 text-xs text-slate-500">
                       {u.overrideCount > 0 ? `${u.overrideCount} set` : "—"}
@@ -366,8 +379,8 @@ export function UsersManagement({ currentUserId }: { currentUserId: string }) {
                   disabled={selectedUser.id === currentUserId}
                   className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F6B4B] disabled:bg-slate-100"
                 >
-                  {ROLES.map((r) => (
-                    <option key={r.value} value={r.value}>
+                  {roles.map((r) => (
+                    <option key={r.name} value={r.name}>
                       {r.label}
                     </option>
                   ))}
@@ -437,7 +450,7 @@ export function UsersManagement({ currentUserId }: { currentUserId: string }) {
               <div>
                 <h3 className="font-bold text-slate-900">Feature Access</h3>
                 <p className="text-xs text-slate-500">
-                  {featureUser.name} · {getRoleLabel(featureUser.role)}
+                  {featureUser.name} · {roleLabel(roles, featureUser.role)}
                 </p>
               </div>
               <button onClick={() => setFeatureOpen(false)} className="text-slate-400 hover:text-slate-600">

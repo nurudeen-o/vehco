@@ -41,16 +41,16 @@ const navigation: NavGroup[] = [
   {
     label: "Fleet",
     items: [
-      { name: "Vehicles", href: "/vehicles", icon: Car, permission: "REGISTER_VEHICLE" },
-      { name: "Drivers", href: "/drivers", icon: Users, permission: "REGISTER_DRIVER" },
+      { name: "Vehicles", href: "/vehicles", icon: Car, permission: "VIEW_VEHICLES" },
+      { name: "Drivers", href: "/drivers", icon: Users, permission: "VIEW_DRIVERS" },
     ],
   },
   {
     label: "Operations",
     items: [
-      { name: "Fuel Tracking", href: "/fuel", icon: Fuel, permission: "RECORD_FUEL" },
-      { name: "Maintenance", href: "/maintenance", icon: Wrench, permission: "RECORD_MAINTENANCE" },
-      { name: "Expenses", href: "/expenses", icon: DollarSign, permission: "RECORD_EXPENSE" },
+      { name: "Fuel Tracking", href: "/fuel", icon: Fuel, permission: "VIEW_FUEL_RECORDS" },
+      { name: "Maintenance", href: "/maintenance", icon: Wrench, permission: "VIEW_MAINTENANCE_RECORDS" },
+      { name: "Expenses", href: "/expenses", icon: DollarSign, permission: "VIEW_EXPENSES" },
       { name: "Documents", href: "/documents", icon: FileText, permission: "VIEW_DOCUMENTS" },
     ],
   },

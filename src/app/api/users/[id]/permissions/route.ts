@@ -108,16 +108,13 @@ export async function PUT(
       ),
     ]);
 
-    const denied = overrides.filter((o) => !o.allowed).map((o) => o.permission);
-    const granted = overrides.filter((o) => o.allowed).map((o) => o.permission);
-
     await prisma.auditLog.create({
       data: {
         userId: gate.session.id,
         action: "UPDATE_USER_PERMISSIONS",
         entity: "User",
         entityId: id,
-        details: `${gate.session.name} set feature overrides for ${user.name}: deny=[${denied.join(", ")}] allow=[${granted.join(", ")}]`,
+        details: `${gate.session.name} updated ${user.name} feature access`,
       },
     });
 

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isValidRole } from "@/lib/permissions";
 import { requirePermission } from "@/lib/permissions-server";
 
 export async function GET() {
@@ -74,7 +73,8 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    if (!isValidRole(role)) {
+    const roleExists = await prisma.role.findUnique({ where: { name: role } });
+    if (!roleExists) {
       return NextResponse.json({ error: "Invalid role" }, { status: 400 });
     }
 

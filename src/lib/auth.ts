@@ -4,7 +4,7 @@ import { verifyPassword } from "./password";
 import { getEffectivePermissions } from "./permissions-server";
 import type { PermissionKey } from "./permissions";
 
-const SESSION_COOKIE = "vehco_session";
+const SESSION_COOKIE = "facotransport_session";
 
 export interface SessionUser {
   id: string;

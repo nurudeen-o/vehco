@@ -6,9 +6,8 @@ import { requirePermission } from "@/lib/permissions-server";
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const gate = await requirePermission(session, "VIEW_MAINTENANCE_RECORDS");
+    if (!gate.ok) return gate.response;
 
     const records = await prisma.maintenanceRecord.findMany({
       include: { vehicle: true, parts: true },

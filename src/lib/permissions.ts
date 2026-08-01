@@ -1,6 +1,6 @@
 export type UserRole = "CEO" | "MANAGER" | "SECRETARY";
 
-export const USER_ROLES: UserRole[] = ["CEO", "MANAGER", "SECRETARY"];
+export const SYSTEM_ROLES: UserRole[] = ["CEO", "MANAGER", "SECRETARY"];
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   CEO: "Superadmin",
@@ -18,13 +18,19 @@ export const PERMISSION_KEYS = [
   "CONFIGURE_WORKFLOW",
   "VIEW_SETTINGS",
   "MANAGE_SETTINGS",
+  "VIEW_VEHICLES",
   "REGISTER_VEHICLE",
-  "REGISTER_DRIVER",
   "EDIT_VEHICLE",
+  "VIEW_DRIVERS",
+  "REGISTER_DRIVER",
+  "EDIT_DRIVER",
+  "VIEW_FUEL_RECORDS",
   "RECORD_FUEL",
+  "VIEW_MAINTENANCE_RECORDS",
   "RECORD_MAINTENANCE",
-  "RECORD_EXPENSE",
   "APPROVE_MAINTENANCE",
+  "VIEW_EXPENSES",
+  "RECORD_EXPENSE",
   "VIEW_APPROVALS",
   "EXPORT_REPORTS",
   "VIEW_ANALYTICS",
@@ -41,13 +47,25 @@ export const DEFAULT_PERMISSIONS: Record<PermissionKey, readonly UserRole[]> = {
   CONFIGURE_WORKFLOW: ["CEO", "MANAGER"],
   VIEW_SETTINGS: ["CEO", "MANAGER"],
   MANAGE_SETTINGS: ["CEO", "MANAGER"],
-  REGISTER_VEHICLE: ["CEO", "MANAGER", "SECRETARY"],
-  REGISTER_DRIVER: ["CEO", "MANAGER", "SECRETARY"],
+
+  VIEW_VEHICLES: ["CEO", "MANAGER", "SECRETARY"],
+  REGISTER_VEHICLE: ["CEO", "MANAGER"],
   EDIT_VEHICLE: ["CEO", "MANAGER"],
+
+  VIEW_DRIVERS: ["CEO", "MANAGER", "SECRETARY"],
+  REGISTER_DRIVER: ["CEO", "MANAGER"],
+  EDIT_DRIVER: ["CEO", "MANAGER"],
+
+  VIEW_FUEL_RECORDS: ["CEO", "MANAGER", "SECRETARY"],
   RECORD_FUEL: ["CEO", "MANAGER", "SECRETARY"],
+
+  VIEW_MAINTENANCE_RECORDS: ["CEO", "MANAGER", "SECRETARY"],
   RECORD_MAINTENANCE: ["CEO", "MANAGER", "SECRETARY"],
-  RECORD_EXPENSE: ["CEO", "MANAGER", "SECRETARY"],
   APPROVE_MAINTENANCE: ["CEO", "MANAGER"],
+
+  VIEW_EXPENSES: ["CEO", "MANAGER", "SECRETARY"],
+  RECORD_EXPENSE: ["CEO", "MANAGER", "SECRETARY"],
+
   VIEW_APPROVALS: ["CEO", "MANAGER"],
   EXPORT_REPORTS: ["CEO", "MANAGER"],
   VIEW_ANALYTICS: ["CEO", "MANAGER"],
@@ -73,13 +91,25 @@ export const PERMISSION_LABELS: Record<PermissionKey, string> = {
   CONFIGURE_WORKFLOW: "Configure approval workflow",
   VIEW_SETTINGS: "View settings",
   MANAGE_SETTINGS: "Manage settings",
+
+  VIEW_VEHICLES: "View vehicles",
   REGISTER_VEHICLE: "Register vehicles",
-  REGISTER_DRIVER: "Register drivers",
   EDIT_VEHICLE: "Edit vehicles / assignments",
+
+  VIEW_DRIVERS: "View drivers",
+  REGISTER_DRIVER: "Register drivers",
+  EDIT_DRIVER: "Edit drivers",
+
+  VIEW_FUEL_RECORDS: "View fuel records",
   RECORD_FUEL: "Record fuel",
+
+  VIEW_MAINTENANCE_RECORDS: "View maintenance records",
   RECORD_MAINTENANCE: "Record maintenance",
-  RECORD_EXPENSE: "Record expenses",
   APPROVE_MAINTENANCE: "Approve maintenance",
+
+  VIEW_EXPENSES: "View expenses",
+  RECORD_EXPENSE: "Record expenses",
+
   VIEW_APPROVALS: "View approvals",
   EXPORT_REPORTS: "Export reports",
   VIEW_ANALYTICS: "View analytics",
@@ -103,13 +133,23 @@ export const PERMISSION_GROUPS: {
   },
   {
     label: "Fleet",
-    permissions: ["REGISTER_VEHICLE", "REGISTER_DRIVER", "EDIT_VEHICLE"],
+    permissions: [
+      "VIEW_VEHICLES",
+      "REGISTER_VEHICLE",
+      "EDIT_VEHICLE",
+      "VIEW_DRIVERS",
+      "REGISTER_DRIVER",
+      "EDIT_DRIVER",
+    ],
   },
   {
     label: "Operations",
     permissions: [
+      "VIEW_FUEL_RECORDS",
       "RECORD_FUEL",
+      "VIEW_MAINTENANCE_RECORDS",
       "RECORD_MAINTENANCE",
+      "VIEW_EXPENSES",
       "RECORD_EXPENSE",
       "VIEW_DOCUMENTS",
     ],
@@ -150,22 +190,22 @@ export function isLeadership(role: UserRole | string): boolean {
   return role === "CEO" || role === "MANAGER";
 }
 
-export function isValidRole(role: string): role is UserRole {
-  return USER_ROLES.includes(role as UserRole);
+export function isSystemRole(role: string): role is UserRole {
+  return SYSTEM_ROLES.includes(role as UserRole);
 }
 
 /** Build default RolePermission rows for seed / ensure. */
 export function buildDefaultRolePermissionRows(): {
-  role: UserRole;
+  role: string;
   permission: PermissionKey;
   allowed: boolean;
 }[] {
   const rows: {
-    role: UserRole;
+    role: string;
     permission: PermissionKey;
     allowed: boolean;
   }[] = [];
-  for (const role of USER_ROLES) {
+  for (const role of SYSTEM_ROLES) {
     for (const permission of PERMISSION_KEYS) {
       rows.push({
         role,
