@@ -29,14 +29,6 @@ type Expense = {
   vehicle?: { code: string; name: string } | null;
 };
 
-type FuelRecord = {
-  id: string;
-  vehicleId: string;
-  totalCost: number;
-  date: Date | string;
-  vehicle?: { code: string; name: string } | null;
-};
-
 type MaintenanceRecord = {
   id: string;
   vehicleId: string;
@@ -73,12 +65,10 @@ function dayLabel(date: Date) {
 
 export function AnalyticsDashboard({
   expenses,
-  fuelRecords,
   maintenanceRecords,
   vehicles,
 }: {
   expenses: Expense[];
-  fuelRecords: FuelRecord[];
   maintenanceRecords: MaintenanceRecord[];
   vehicles: Vehicle[];
 }) {
@@ -89,9 +79,6 @@ export function AnalyticsDashboard({
   // Spend per vehicle (all time)
   const vehicleSpend = vehicles
     .map((v) => {
-      const fuel = fuelRecords
-        .filter((f) => f.vehicleId === v.id)
-        .reduce((sum, f) => sum + f.totalCost, 0);
       const maint = maintenanceRecords
         .filter((m) => m.vehicleId === v.id)
         .reduce((sum, m) => sum + m.totalCost, 0);
@@ -101,23 +88,20 @@ export function AnalyticsDashboard({
       return {
         code: v.code,
         name: v.name,
-        fuel,
         maintenance: maint,
         expenses: exp,
-        total: fuel + maint + exp,
+        total: maint + exp,
       };
     })
     .filter((v) => v.total > 0)
     .sort((a, b) => b.total - a.total);
 
-  const totalFuel = fuelRecords.reduce((s, f) => s + f.totalCost, 0);
   const totalMaintenance = maintenanceRecords.reduce((s, m) => s + m.totalCost, 0);
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
-  const grandTotal = totalFuel + totalMaintenance + totalExpenses;
+  const grandTotal = totalMaintenance + totalExpenses;
 
-  // Category breakdown (expenses by category + fuel + maintenance)
+  // Category breakdown
   const categoryTotals: Record<string, number> = {
-    Fuel: totalFuel,
     Maintenance: totalMaintenance,
   };
   expenses.forEach((e) => {
@@ -134,13 +118,9 @@ export function AnalyticsDashboard({
     months.push({ key: monthKey(d), label: monthLabel(d), date: d });
   }
 
-  const monthlyMap = new Map<string, { fuel: number; maintenance: number; expenses: number }>();
-  months.forEach((m) => monthlyMap.set(m.key, { fuel: 0, maintenance: 0, expenses: 0 }));
+  const monthlyMap = new Map<string, { maintenance: number; expenses: number }>();
+  months.forEach((m) => monthlyMap.set(m.key, { maintenance: 0, expenses: 0 }));
 
-  fuelRecords.forEach((f) => {
-    const key = monthKey(parseDate(f.date));
-    if (monthlyMap.has(key)) monthlyMap.get(key)!.fuel += f.totalCost;
-  });
   maintenanceRecords.forEach((m) => {
     const key = monthKey(parseDate(m.createdAt));
     if (monthlyMap.has(key)) monthlyMap.get(key)!.maintenance += m.totalCost;
@@ -152,11 +132,9 @@ export function AnalyticsDashboard({
 
   const monthlyData = months.map((m) => ({
     label: m.label,
-    fuel: monthlyMap.get(m.key)!.fuel,
     maintenance: monthlyMap.get(m.key)!.maintenance,
     expenses: monthlyMap.get(m.key)!.expenses,
     total:
-      monthlyMap.get(m.key)!.fuel +
       monthlyMap.get(m.key)!.maintenance +
       monthlyMap.get(m.key)!.expenses,
   }));
@@ -172,16 +150,13 @@ export function AnalyticsDashboard({
     const lastYearKey = `${lastYear}-${String(monthIndex + 1).padStart(2, "0")}`;
 
     const sum = (key: string) => {
-      const fuel = fuelRecords
-        .filter((f) => monthKey(parseDate(f.date)) === key)
-        .reduce((s, f) => s + f.totalCost, 0);
       const maint = maintenanceRecords
         .filter((m) => monthKey(parseDate(m.createdAt)) === key)
         .reduce((s, m) => s + m.totalCost, 0);
       const exp = expenses
         .filter((e) => monthKey(parseDate(e.date)) === key)
         .reduce((s, e) => s + e.amount, 0);
-      return fuel + maint + exp;
+      return maint + exp;
     };
 
     return {
@@ -191,7 +166,7 @@ export function AnalyticsDashboard({
     };
   });
 
-  // MoM - last 12 months total comparison (already in monthlyData)
+  // MoM
   const momData = monthlyData.map((m) => ({
     label: m.label,
     total: m.total,
@@ -208,10 +183,6 @@ export function AnalyticsDashboard({
   const dailyMap = new Map<string, number>();
   days.forEach((d) => dailyMap.set(d.key, 0));
 
-  fuelRecords.forEach((f) => {
-    const key = dayKey(parseDate(f.date));
-    if (dailyMap.has(key)) dailyMap.set(key, dailyMap.get(key)! + f.totalCost);
-  });
   maintenanceRecords.forEach((m) => {
     const key = dayKey(parseDate(m.createdAt));
     if (dailyMap.has(key)) dailyMap.set(key, dailyMap.get(key)! + m.totalCost);
@@ -241,14 +212,10 @@ export function AnalyticsDashboard({
       </div>
 
       {/* Summary metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card>
           <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Grand Total Spend</p>
           <p className="text-2xl font-bold text-slate-900 mt-1">{formatCurrency(grandTotal)}</p>
-        </Card>
-        <Card>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Total Fuel Spend</p>
-          <p className="text-2xl font-bold text-slate-900 mt-1">{formatCurrency(totalFuel)}</p>
         </Card>
         <Card>
           <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Total Maintenance</p>
@@ -264,7 +231,7 @@ export function AnalyticsDashboard({
       <Card>
         <CardHeader
           title="Monthly Spend Trend (Last 12 Months)"
-          subtitle="Line view of fuel, maintenance, and operating expenses"
+          subtitle="Line view of maintenance and operating expenses"
         />
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -274,8 +241,7 @@ export function AnalyticsDashboard({
               <YAxis tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
               <Tooltip formatter={tooltipCurrencyFormatter} />
               <Legend />
-              <Line type="monotone" dataKey="fuel" name="Fuel" stroke={COLORS[0]} strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="maintenance" name="Maintenance" stroke={COLORS[1]} strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="maintenance" name="Maintenance" stroke={COLORS[0]} strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="expenses" name="Other Expenses" stroke={COLORS[2]} strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
@@ -368,7 +334,7 @@ export function AnalyticsDashboard({
 
       {/* Top vehicles by spend */}
       <Card>
-        <CardHeader title="Top Vehicles by Lifetime Spend" subtitle="All-time fuel, maintenance, and expenses per vehicle" />
+        <CardHeader title="Top Vehicles by Lifetime Spend" subtitle="All-time maintenance and expenses per vehicle" />
         <div className="h-96">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={vehicleSpend.slice(0, 15)} layout="vertical">
@@ -377,8 +343,7 @@ export function AnalyticsDashboard({
               <YAxis type="category" dataKey="code" tick={{ fontSize: 11 }} width={80} />
               <Tooltip formatter={tooltipCurrencyFormatter} />
               <Legend />
-              <Bar dataKey="fuel" name="Fuel" stackId="a" fill={COLORS[0]} />
-              <Bar dataKey="maintenance" name="Maintenance" stackId="a" fill={COLORS[1]} />
+              <Bar dataKey="maintenance" name="Maintenance" stackId="a" fill={COLORS[0]} />
               <Bar dataKey="expenses" name="Other Expenses" stackId="a" fill={COLORS[2]} />
             </BarChart>
           </ResponsiveContainer>

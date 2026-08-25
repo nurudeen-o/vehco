@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Camera } from "lucide-react";
 import Link from "next/link";
 import { FUEL_TYPES } from "@/lib/constants";
 
@@ -26,6 +26,33 @@ export default function NewVehiclePage() {
     status: "ACTIVE",
   });
 
+  // Optional image states
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    setImageFiles((prev) => [...prev, ...newFiles]);
+
+    // Generate previews
+    newFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setImagePreviews((prev) => [...prev, ev.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const removeImage = (index: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -36,6 +63,31 @@ export default function NewVehiclePage() {
         body: JSON.stringify(formData),
       });
       if (res.ok) {
+        const vehicle = await res.json();
+
+        // Upload images if any
+        if (imageFiles.length > 0) {
+          for (let i = 0; i < imageFiles.length; i++) {
+            const file = imageFiles[i];
+            const reader = new FileReader();
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+
+            await fetch(`/api/vehicles/${vehicle.id}/images`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                url: dataUrl,
+                caption: file.name,
+                isPrimary: i === 0,
+              }),
+            });
+          }
+        }
+
         router.push("/vehicles");
       }
     } catch (err) {
@@ -178,6 +230,48 @@ export default function NewVehiclePage() {
                   <option value="INACTIVE">INACTIVE</option>
                   <option value="MAINTENANCE">MAINTENANCE</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Vehicle Images (Optional) */}
+            <div className="pt-4 border-t border-slate-100">
+              <label className="block text-xs font-semibold text-slate-700 uppercase mb-2">
+                Vehicle Images (Optional)
+              </label>
+              <p className="text-xs text-slate-400 mb-3">
+                Add photos of the vehicle — exterior, interior, or documents. Images are uploaded after the vehicle is saved.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                {imagePreviews.map((preview, idx) => (
+                  <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border border-slate-200 group">
+                    <img src={preview} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                    {idx === 0 && (
+                      <span className="absolute top-1 left-1 bg-[#F4B400] text-slate-900 text-[8px] font-bold px-1 py-0.5 rounded">
+                        PRIMARY
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+
+                <label className="cursor-pointer w-24 h-24 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:border-[#0F6B4B] hover:text-[#0F6B4B] transition-colors">
+                  <Camera className="w-5 h-5" />
+                  <span className="text-[10px] font-medium mt-1">Add Photo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageSelect}
+                  />
+                </label>
               </div>
             </div>
 

@@ -3,18 +3,14 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const [vehicles, fuelRecords, maintenanceRecords, expenses] = await Promise.all([
+    const [vehicles, maintenanceRecords, expenses] = await Promise.all([
       prisma.vehicle.findMany({ where: { deletedAt: null }, select: { id: true, code: true, name: true } }),
-      prisma.fuelRecord.findMany({ select: { vehicleId: true, totalCost: true } }),
       prisma.maintenanceRecord.findMany({ select: { vehicleId: true, totalCost: true } }),
       prisma.expense.findMany({ select: { vehicleId: true, amount: true, category: true } }),
     ]);
 
     const data = vehicles
       .map((v) => {
-        const fuel = fuelRecords
-          .filter((f) => f.vehicleId === v.id)
-          .reduce((sum, f) => sum + f.totalCost, 0);
         const maintenance = maintenanceRecords
           .filter((m) => m.vehicleId === v.id)
           .reduce((sum, m) => sum + m.totalCost, 0);
@@ -25,17 +21,15 @@ export async function GET() {
           id: v.id,
           code: v.code,
           name: v.name,
-          fuel,
           maintenance,
           other,
-          total: fuel + maintenance + other,
+          total: maintenance + other,
         };
       })
       .filter((v) => v.total > 0)
       .sort((a, b) => b.total - a.total);
 
     const categoryTotals: Record<string, number> = {
-      Fuel: fuelRecords.reduce((s, f) => s + f.totalCost, 0),
       Maintenance: maintenanceRecords.reduce((s, m) => s + m.totalCost, 0),
     };
     expenses.forEach((e) => {

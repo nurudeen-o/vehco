@@ -12,7 +12,7 @@ async function main() {
   await prisma.partInstallation.deleteMany();
   await prisma.expense.deleteMany();
   await prisma.maintenanceRecord.deleteMany();
-  await prisma.fuelRecord.deleteMany();
+  await prisma.vehicleImage.deleteMany();
   await prisma.vehicleAssignment.deleteMany();
   await prisma.vehicle.deleteMany();
   await prisma.driver.deleteMany();
@@ -181,32 +181,6 @@ async function main() {
       vehicleId: vehicle1.id,
       driverId: driver1.id,
       notes: "Primary executive assignment",
-    },
-  });
-
-  await prisma.fuelRecord.create({
-    data: {
-      vehicleId: vehicle1.id,
-      driverId: driver1.id,
-      litres: 75.5,
-      pricePerLitre: 1.85,
-      totalCost: 139.68,
-      odometer: 42350,
-      vendor: "NNPC Mega Station, VI Lagos",
-      date: new Date("2026-07-20"),
-    },
-  });
-
-  await prisma.fuelRecord.create({
-    data: {
-      vehicleId: vehicle2.id,
-      driverId: driver2.id,
-      litres: 90.0,
-      pricePerLitre: 1.85,
-      totalCost: 166.5,
-      odometer: 88100,
-      vendor: "Total Energies, Garki Abuja",
-      date: new Date("2026-07-22"),
     },
   });
 

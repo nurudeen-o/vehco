@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Car, Wrench, Fuel, CheckSquare, Clock } from "lucide-react";
+import { Car, Wrench, CheckSquare, Clock } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -16,7 +16,6 @@ export default async function DashboardPage() {
     maintenanceVehicles,
     totalDrivers,
     pendingApprovals,
-    fuelRecords,
     maintenanceRecords,
     recentAuditLogs,
   ] = await Promise.all([
@@ -25,19 +24,17 @@ export default async function DashboardPage() {
     prisma.vehicle.count({ where: { status: "MAINTENANCE", deletedAt: null } }),
     prisma.driver.count(),
     prisma.approval.count({ where: { status: "PENDING" } }),
-    prisma.fuelRecord.findMany({ take: 5, orderBy: { date: "desc" }, include: { vehicle: true } }),
     prisma.maintenanceRecord.findMany({ take: 5, orderBy: { createdAt: "desc" }, include: { vehicle: true } }),
     prisma.auditLog.findMany({ take: 6, orderBy: { createdAt: "desc" }, include: { user: true } }),
   ]);
 
-  const monthlyFuelCost = fuelRecords.reduce((acc, curr) => acc + curr.totalCost, 0);
   const monthlyMaintCost = maintenanceRecords.reduce((acc, curr) => acc + curr.totalCost, 0);
 
   return (
     <>
       <Header title="Dashboard & KPI Analytics" />
       <div className="page-pad">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <Card>
             <div className="flex items-center justify-between">
               <div>
@@ -60,19 +57,6 @@ export default async function DashboardPage() {
               </div>
               <div className="p-3 bg-amber-50 rounded-xl text-amber-600">
                 <Wrench className="w-6 h-6" />
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Monthly Fuel Spent</p>
-                <h3 className="text-2xl font-bold text-slate-900 mt-1">{formatCurrency(monthlyFuelCost)}</h3>
-                <p className="text-xs text-slate-500 mt-1">{fuelRecords.length} Refuels Logged</p>
-              </div>
-              <div className="p-3 bg-sky-50 rounded-xl text-sky-600">
-                <Fuel className="w-6 h-6" />
               </div>
             </div>
           </Card>
@@ -134,40 +118,6 @@ export default async function DashboardPage() {
                 </table>
               </div>
             </Card>
-
-            <Card>
-              <CardHeader
-                title="Recent Fuel Logs"
-                subtitle="Fuel expenditure and volume"
-                action={<Link href="/fuel" className="text-xs text-[#0F6B4B] font-semibold hover:underline">View Fuel Logs</Link>}
-              />
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-medium">
-                    <tr>
-                      <th className="py-2.5 px-3">Vehicle</th>
-                      <th className="py-2.5 px-3">Litres</th>
-                      <th className="py-2.5 px-3">Odometer</th>
-                      <th className="py-2.5 px-3">Total Cost</th>
-                      <th className="py-2.5 px-3">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {fuelRecords.map((f) => (
-                      <tr key={f.id} className="hover:bg-slate-50">
-                        <td className="py-3 px-3 font-medium text-slate-800">
-                          {f.vehicle?.name} ({f.vehicle?.code})
-                        </td>
-                        <td className="py-3 px-3 text-slate-600">{f.litres} L</td>
-                        <td className="py-3 px-3 text-slate-600">{f.odometer.toLocaleString()} km</td>
-                        <td className="py-3 px-3 font-semibold text-slate-800">{formatCurrency(f.totalCost)}</td>
-                        <td className="py-3 px-3 text-slate-500 text-xs">{formatDate(f.date)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
           </div>
 
           <div className="space-y-6">
@@ -208,9 +158,6 @@ export default async function DashboardPage() {
               <div className="flex flex-col gap-2">
                 <Link href="/vehicles/new" className="px-3 py-2 bg-[#0F6B4B] hover:bg-[#0c573d] text-white text-xs font-medium rounded-lg text-center transition-colors">
                   + Register New Vehicle
-                </Link>
-                <Link href="/fuel/new" className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg text-center transition-colors">
-                  + Log Fuel Refill
                 </Link>
                 <Link href="/maintenance/new" className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg text-center transition-colors">
                   + Record Maintenance Request

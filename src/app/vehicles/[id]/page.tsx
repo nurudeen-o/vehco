@@ -6,7 +6,7 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { QrCode, ArrowLeft, Fuel, Wrench, DollarSign, UserMinus, UserCheck } from "lucide-react";
+import { QrCode, ArrowLeft, Wrench, DollarSign, UserMinus, UserCheck, Camera, Trash2, Star } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { VehicleSpendAnalysis } from "@/components/analytics/VehicleSpendAnalysis";
 
@@ -22,6 +22,10 @@ export default function VehicleDetailPage({
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
   const [selectedDriverId, setSelectedDriverId] = useState("");
+
+  // Image states
+  const [uploading, setUploading] = useState(false);
+  const [caption, setCaption] = useState("");
 
   const fetchData = async () => {
     try {
@@ -81,6 +85,73 @@ export default function VehicleDetailPage({
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        await fetch(`/api/vehicles/${id}/images`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: dataUrl,
+            caption: caption || file.name,
+            isPrimary: i === 0 && (!vehicle?.images || vehicle.images.length === 0),
+          }),
+        });
+      }
+      setCaption("");
+      await fetchData();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleDeleteImage = async (imageId: string) => {
+    if (!confirm("Remove this image?")) return;
+    try {
+      await fetch(`/api/vehicles/${id}/images`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageId }),
+      });
+      await fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSetPrimary = async (imageId: string) => {
+    try {
+      // Set all non-primary first, then set this one
+      for (const img of vehicle?.images || []) {
+        if (img.isPrimary !== (img.id === imageId)) {
+          await fetch(`/api/vehicles/${id}/images`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageId: img.id, isPrimary: img.id === imageId }),
+          });
+        }
+      }
+      await fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -115,12 +186,13 @@ export default function VehicleDetailPage({
     );
   }
 
-  const totalFuelCost = vehicle.fuelRecords?.reduce((acc: number, curr: any) => acc + curr.totalCost, 0) || 0;
   const totalMaintCost = vehicle.maintenanceRecords?.reduce((acc: number, curr: any) => acc + curr.totalCost, 0) || 0;
   const totalExpenseCost = vehicle.expenses?.reduce((acc: number, curr: any) => acc + curr.amount, 0) || 0;
-  const lifetimeCost = totalFuelCost + totalMaintCost + totalExpenseCost;
+  const lifetimeCost = totalMaintCost + totalExpenseCost;
 
   const canEdit = sessionUser?.role === "CEO" || sessionUser?.role === "MANAGER";
+
+  const primaryImage = vehicle.images?.find((img: any) => img.isPrimary) || vehicle.images?.[0];
 
   return (
     <>
@@ -263,10 +335,6 @@ export default function VehicleDetailPage({
 
             <div className="mt-6 space-y-3 border-t border-emerald-700/50 pt-4 text-xs">
               <div className="flex justify-between items-center">
-                <span className="flex items-center gap-1.5 opacity-90"><Fuel className="w-3.5 h-3.5" /> Total Fuel</span>
-                <span className="font-semibold">{formatCurrency(totalFuelCost)}</span>
-              </div>
-              <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1.5 opacity-90"><Wrench className="w-3.5 h-3.5" /> Maintenance</span>
                 <span className="font-semibold">{formatCurrency(totalMaintCost)}</span>
               </div>
@@ -278,7 +346,86 @@ export default function VehicleDetailPage({
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Vehicle Images Gallery */}
+        <Card>
+          <CardHeader
+            title="Vehicle Images"
+            subtitle={`${vehicle.images?.length || 0} photo(s) uploaded`}
+          />
+
+          {canEdit && (
+            <div className="mb-4 flex flex-wrap items-end gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Image Caption (optional)</label>
+                <input
+                  type="text"
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder="e.g. Front view, Interior..."
+                  className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B4B] w-56"
+                />
+              </div>
+              <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-[#0F6B4B] hover:bg-[#0c573d] text-white text-sm font-medium rounded-lg transition-colors">
+                <Camera className="w-4 h-4" />
+                {uploading ? "Uploading..." : "Add Images"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                />
+              </label>
+            </div>
+          )}
+
+          {!vehicle.images || vehicle.images.length === 0 ? (
+            <p className="text-slate-400 text-sm">No images uploaded yet.</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {vehicle.images.map((img: any) => (
+                <div key={img.id} className="relative group rounded-xl overflow-hidden border border-slate-200">
+                  <img
+                    src={img.url}
+                    alt={img.caption || "Vehicle image"}
+                    className="w-full h-36 object-cover"
+                  />
+                  {img.isPrimary && (
+                    <span className="absolute top-2 left-2 bg-[#F4B400] text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      PRIMARY
+                    </span>
+                  )}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                    <p className="text-white text-[11px] font-medium truncate">{img.caption || "Vehicle photo"}</p>
+                  </div>
+                  {canEdit && (
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {!img.isPrimary && (
+                        <button
+                          onClick={() => handleSetPrimary(img.id)}
+                          className="p-1 bg-[#F4B400] rounded-full hover:bg-yellow-400"
+                          title="Set as primary"
+                        >
+                          <Star className="w-3 h-3 text-slate-900" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteImage(img.id)}
+                        className="p-1 bg-red-500 rounded-full hover:bg-red-600"
+                        title="Remove image"
+                      >
+                        <Trash2 className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
           <Card>
             <CardHeader title="Recent Maintenance Records" />
             <div className="space-y-3 text-xs">
@@ -295,25 +442,6 @@ export default function VehicleDetailPage({
                       <p className="font-bold text-slate-900">{formatCurrency(m.totalCost)}</p>
                       <Badge variant={m.status === "APPROVED" ? "success" : "warning"}>{m.status}</Badge>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader title="Recent Fuel Logs" />
-            <div className="space-y-3 text-xs">
-              {!vehicle.fuelRecords || vehicle.fuelRecords.length === 0 ? (
-                <p className="text-slate-400">No fuel records logged.</p>
-              ) : (
-                vehicle.fuelRecords.map((f: any) => (
-                  <div key={f.id} className="p-3 bg-slate-50 rounded-lg flex justify-between items-center">
-                    <div>
-                      <p className="font-semibold text-slate-800">{f.litres} Litres @ {formatCurrency(f.pricePerLitre)}/L</p>
-                      <p className="text-slate-500">{formatDate(f.date)} - {f.vendor || "N/A"}</p>
-                    </div>
-                    <p className="font-bold text-slate-900">{formatCurrency(f.totalCost)}</p>
                   </div>
                 ))
               )}

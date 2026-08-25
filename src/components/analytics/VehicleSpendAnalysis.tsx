@@ -13,7 +13,6 @@ type VehicleSpend = {
   id: string;
   code: string;
   name: string;
-  fuel: number;
   maintenance: number;
   other: number;
   total: number;
@@ -92,7 +91,7 @@ export function VehicleSpendAnalysis({
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Total Amount Spent Per Vehicle</h3>
-                <p className="text-xs text-slate-500">Lifetime fuel, maintenance, and operating expenses</p>
+                <p className="text-xs text-slate-500">Lifetime maintenance and operating expenses</p>
               </div>
               <button
                 type="button"
@@ -120,15 +119,10 @@ export function VehicleSpendAnalysis({
 
               {!loading && !error && summary && (
                 <>
-                  {/* Current vehicle highlight */}
                   {currentVehicle && (
                     <Card className="bg-sky-50 border-sky-200">
                       <CardHeader title={`Current Vehicle: ${currentVehicle.code}`} subtitle={currentVehicle.name} />
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <p className="text-[10px] uppercase text-slate-500 font-semibold">Fuel</p>
-                          <p className="font-bold text-slate-900">{formatCurrency(currentVehicle.fuel)}</p>
-                        </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
                         <div>
                           <p className="text-[10px] uppercase text-slate-500 font-semibold">Maintenance</p>
                           <p className="font-bold text-slate-900">{formatCurrency(currentVehicle.maintenance)}</p>
@@ -145,7 +139,6 @@ export function VehicleSpendAnalysis({
                     </Card>
                   )}
 
-                  {/* Summary metrics */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card>
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Total Fleet Spend</p>
@@ -170,7 +163,6 @@ export function VehicleSpendAnalysis({
                     </Card>
                   </div>
 
-                  {/* Bar chart */}
                   <Card>
                     <CardHeader title="Spend per Vehicle" subtitle="Stacked bar by cost type" />
                     <div className="h-80">
@@ -183,22 +175,20 @@ export function VehicleSpendAnalysis({
                             formatter={(value: number, name: string) => [formatCurrency(value), name]}
                             labelFormatter={(label) => `Vehicle: ${label}`}
                           />
-                          <Bar dataKey="fuel" name="Fuel" stackId="a" fill={COLORS[0]}>
+                          <Bar dataKey="maintenance" name="Maintenance" stackId="a" fill={COLORS[0]}>
                             {data.map((entry) => (
                               <Cell
-                                key={`cell-fuel-${entry.id}`}
+                                key={`cell-maint-${entry.id}`}
                                 fill={entry.id === currentVehicleId ? COLORS[3] : COLORS[0]}
                               />
                             ))}
                           </Bar>
-                          <Bar dataKey="maintenance" name="Maintenance" stackId="a" fill={COLORS[1]} />
                           <Bar dataKey="other" name="Other Expenses" stackId="a" fill={COLORS[2]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </Card>
 
-                  {/* Table */}
                   <Card>
                     <CardHeader title="Vehicle Spend Summary" />
                     <div className="overflow-x-auto">
@@ -206,7 +196,6 @@ export function VehicleSpendAnalysis({
                         <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-medium">
                           <tr>
                             <th className="py-2.5 px-3">Vehicle</th>
-                            <th className="py-2.5 px-3">Fuel</th>
                             <th className="py-2.5 px-3">Maintenance</th>
                             <th className="py-2.5 px-3">Other Expenses</th>
                             <th className="py-2.5 px-3 text-right">Total</th>
@@ -215,7 +204,7 @@ export function VehicleSpendAnalysis({
                         <tbody className="divide-y divide-slate-100">
                           {data.length === 0 ? (
                             <tr>
-                              <td colSpan={5} className="py-6 text-center text-slate-400 text-xs">
+                              <td colSpan={4} className="py-6 text-center text-slate-400 text-xs">
                                 No spending data available.
                               </td>
                             </tr>
@@ -233,7 +222,6 @@ export function VehicleSpendAnalysis({
                                   <span className="font-semibold text-slate-800">{v.code}</span>
                                   <span className="block text-[10px] text-slate-500">{v.name}</span>
                                 </td>
-                                <td className="py-2.5 px-3 text-slate-600">{formatCurrency(v.fuel)}</td>
                                 <td className="py-2.5 px-3 text-slate-600">{formatCurrency(v.maintenance)}</td>
                                 <td className="py-2.5 px-3 text-slate-600">{formatCurrency(v.other)}</td>
                                 <td className="py-2.5 px-3 text-right font-bold text-slate-900">{formatCurrency(v.total)}</td>

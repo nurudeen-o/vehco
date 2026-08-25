@@ -24,7 +24,10 @@ export function middleware(request: NextRequest) {
   const session = readSession(request);
   const { pathname } = request.nextUrl;
 
-  const isPublicPath = pathname === "/login" || pathname.startsWith("/qr");
+  const isPublicPath =
+    pathname === "/login" ||
+    pathname.startsWith("/qr") ||
+    pathname.startsWith("/api/public");
   const isApiAuth = pathname.startsWith("/api/auth") || pathname.startsWith("/api/test-db");
   const isStatic = pathname.includes(".") || pathname.startsWith("/_next");
 

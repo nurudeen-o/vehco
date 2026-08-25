@@ -10,7 +10,6 @@ export default function ReportsPage() {
     { title: "Vehicle Utilization & Master Report", desc: "Complete fleet inventory, statuses, assigned drivers and branches.", type: "Vehicle" },
     { title: "Driver Assignment & Performance Report", desc: "Driver license status, emergency contacts, and assigned vehicles.", type: "Driver" },
     { title: "Maintenance & Servicing Expense Report", desc: "Detailed breakdown of repair costs, labour, parts, and vendors.", type: "Maintenance" },
-    { title: "Fuel Consumption & Efficiency Log", desc: "Litres dispensed, cost per litre, odometer tracking, and total spend.", type: "Fuel" },
     { title: "Executive Operating Cost Summary", desc: "Lifetime vehicle operating costs categorized by type and branch.", type: "Executive" },
   ];
 

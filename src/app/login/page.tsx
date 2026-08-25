@@ -87,7 +87,7 @@ export default function LoginPage() {
               operations at scale.
             </h2>
             <p className="text-slate-400 text-sm mt-3 leading-relaxed">
-              Manage vehicles, drivers, maintenance, fuel, approvals,
+              Manage vehicles, drivers, maintenance, approvals,
               and QR-based identification, all from one secure platform.
             </p>
           </div>
@@ -95,7 +95,6 @@ export default function LoginPage() {
           <div className="grid grid-cols-2 gap-3">
             {[
               { label: "Vehicle Tracking", icon: "🚗" },
-              { label: "Fuel Management", icon: "⛽" },
               { label: "Maintenance Logs", icon: "🔧" },
               { label: "QR Identification", icon: "📱" },
               { label: "Approval Workflow", icon: "✅" },

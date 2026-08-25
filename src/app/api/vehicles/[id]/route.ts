@@ -18,9 +18,9 @@ export async function GET(
       include: {
         assignedDriver: true,
         branch: true,
-        fuelRecords: { orderBy: { date: "desc" } },
         maintenanceRecords: { orderBy: { createdAt: "desc" } },
         expenses: { orderBy: { date: "desc" } },
+        images: { orderBy: { createdAt: "desc" } },
       },
     });
     if (!vehicle) {

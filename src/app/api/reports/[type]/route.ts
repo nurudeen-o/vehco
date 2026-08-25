@@ -149,12 +149,7 @@ function buildSummary(
         { label: 'Report Scope', value: 'Service Log' },
         { label: 'Currency', value: 'NGN (₦)' },
       ];
-    case 'fuel':
-      return [
-        { label: 'Refuel Logs', value: count },
-        { label: 'Report Scope', value: 'Fuel Ops' },
-        { label: 'Currency', value: 'NGN (₦)' },
-      ];
+
     case 'executive':
       return [
         { label: 'Vehicles', value: count },
@@ -175,7 +170,7 @@ export async function GET(request: Request, context: any) {
   let data: any[] = [];
   let columns: string[] = [];
   let title = '';
-  let execTotals = { totalFuel: 0, totalMaint: 0, totalExp: 0, totalAll: 0 };
+  let execTotals = { totalMaint: 0, totalExp: 0, totalAll: 0 };
 
   switch (reportType) {
     case 'vehicle':
@@ -208,36 +203,22 @@ export async function GET(request: Request, context: any) {
       ]);
       break;
 
-    case 'fuel':
-      title = 'Fuel Consumption Report';
-      columns = ['Date', 'Vehicle Code', 'Vehicle Name', 'Driver', 'Litres', 'Price/Litre', 'Total Cost', 'Odometer', 'Vendor'];
-      const fuels = await prisma.fuelRecord.findMany({ include: { vehicle: true, driver: true } });
-      data = fuels.map(f => [
-        formatDate(f.date), f.vehicle.code, f.vehicle.name,
-        f.driver ? `${f.driver.firstName} ${f.driver.lastName}` : 'N/A',
-        f.litres.toString(), formatNaira(f.pricePerLitre), formatNaira(f.totalCost),
-        f.odometer.toString(), f.vendor || 'N/A'
-      ]);
-      break;
-
     case 'executive':
       title = 'Executive Operating Cost Summary';
-      columns = ['Vehicle Code', 'Vehicle Name', 'Total Fuel Cost', 'Total Maintenance Cost', 'Total Expenses', 'Fleet Cost'];
+      columns = ['Vehicle Code', 'Vehicle Name', 'Total Maintenance Cost', 'Total Expenses', 'Fleet Cost'];
       const execVehicles = await prisma.vehicle.findMany({
-        include: { fuelRecords: true, maintenanceRecords: true, expenses: true }
+        include: { maintenanceRecords: true, expenses: true }
       });
       data = execVehicles.map(v => {
-        const fuel = v.fuelRecords.reduce((acc, curr) => acc + curr.totalCost, 0);
         const maint = v.maintenanceRecords.reduce((acc, curr) => acc + curr.totalCost, 0);
         const exp = v.expenses.reduce((acc, curr) => acc + curr.amount, 0);
-        const total = fuel + maint + exp;
-        execTotals.totalFuel += fuel;
+        const total = maint + exp;
         execTotals.totalMaint += maint;
         execTotals.totalExp += exp;
         execTotals.totalAll += total;
         return [
           v.code, v.name,
-          formatNaira(fuel), formatNaira(maint), formatNaira(exp), formatNaira(total)
+          formatNaira(maint), formatNaira(exp), formatNaira(total)
         ];
       });
       break;
@@ -316,7 +297,6 @@ export async function GET(request: Request, context: any) {
     // Extra executive totals row
     if (reportType === 'executive') {
       const detailCards = [
-        { label: 'Fuel Total', value: formatNaira(execTotals.totalFuel) },
         { label: 'Maintenance Total', value: formatNaira(execTotals.totalMaint) },
         { label: 'Expenses Total', value: formatNaira(execTotals.totalExp) },
         { label: 'Grand Total', value: formatNaira(execTotals.totalAll) },

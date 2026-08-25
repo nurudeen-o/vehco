@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Car,
   Users,
-  Fuel,
   Wrench,
   DollarSign,
   FileText,
@@ -48,7 +47,6 @@ const navigation: NavGroup[] = [
   {
     label: "Operations",
     items: [
-      { name: "Fuel Tracking", href: "/fuel", icon: Fuel, permission: "VIEW_FUEL_RECORDS" },
       { name: "Maintenance", href: "/maintenance", icon: Wrench, permission: "VIEW_MAINTENANCE_RECORDS" },
       { name: "Expenses", href: "/expenses", icon: DollarSign, permission: "VIEW_EXPENSES" },
       { name: "Documents", href: "/documents", icon: FileText, permission: "VIEW_DOCUMENTS" },

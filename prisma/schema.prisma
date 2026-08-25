@@ -93,10 +93,10 @@ model Vehicle {
   updatedAt          DateTime            @updatedAt
   deletedAt          DateTime?
   assignments        VehicleAssignment[]
-  fuelRecords        FuelRecord[]
   maintenanceRecords MaintenanceRecord[]
   expenses           Expense[]
   documents          Document[]
+  images             VehicleImage[]
 }
 
 model Driver {
@@ -115,7 +115,6 @@ model Driver {
   updatedAt         DateTime            @updatedAt
   assignedVehicles  Vehicle[]
   assignments       VehicleAssignment[]
-  fuelRecords       FuelRecord[]
   documents         Document[]
 }
 
@@ -131,20 +130,14 @@ model VehicleAssignment {
   createdAt DateTime  @default(now())
 }
 
-model FuelRecord {
-  id            String   @id @default(uuid())
-  vehicleId     String
-  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  driverId      String?
-  driver        Driver?  @relation(fields: [driverId], references: [id])
-  litres        Float
-  pricePerLitre Float
-  totalCost     Float
-  odometer      Float
-  vendor        String?
-  receiptUrl    String?
-  date          DateTime @default(now())
-  createdAt     DateTime @default(now())
+model VehicleImage {
+  id         String   @id @default(uuid())
+  vehicleId  String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  url        String
+  caption    String?
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
 
 model MaintenanceRecord {

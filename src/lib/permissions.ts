@@ -24,8 +24,6 @@ export const PERMISSION_KEYS = [
   "VIEW_DRIVERS",
   "REGISTER_DRIVER",
   "EDIT_DRIVER",
-  "VIEW_FUEL_RECORDS",
-  "RECORD_FUEL",
   "VIEW_MAINTENANCE_RECORDS",
   "RECORD_MAINTENANCE",
   "APPROVE_MAINTENANCE",
@@ -55,9 +53,6 @@ export const DEFAULT_PERMISSIONS: Record<PermissionKey, readonly UserRole[]> = {
   VIEW_DRIVERS: ["CEO", "MANAGER", "SECRETARY"],
   REGISTER_DRIVER: ["CEO", "MANAGER"],
   EDIT_DRIVER: ["CEO", "MANAGER"],
-
-  VIEW_FUEL_RECORDS: ["CEO", "MANAGER", "SECRETARY"],
-  RECORD_FUEL: ["CEO", "MANAGER", "SECRETARY"],
 
   VIEW_MAINTENANCE_RECORDS: ["CEO", "MANAGER", "SECRETARY"],
   RECORD_MAINTENANCE: ["CEO", "MANAGER", "SECRETARY"],
@@ -99,9 +94,6 @@ export const PERMISSION_LABELS: Record<PermissionKey, string> = {
   VIEW_DRIVERS: "View drivers",
   REGISTER_DRIVER: "Register drivers",
   EDIT_DRIVER: "Edit drivers",
-
-  VIEW_FUEL_RECORDS: "View fuel records",
-  RECORD_FUEL: "Record fuel",
 
   VIEW_MAINTENANCE_RECORDS: "View maintenance records",
   RECORD_MAINTENANCE: "Record maintenance",
@@ -145,8 +137,6 @@ export const PERMISSION_GROUPS: {
   {
     label: "Operations",
     permissions: [
-      "VIEW_FUEL_RECORDS",
-      "RECORD_FUEL",
       "VIEW_MAINTENANCE_RECORDS",
       "RECORD_MAINTENANCE",
       "VIEW_EXPENSES",

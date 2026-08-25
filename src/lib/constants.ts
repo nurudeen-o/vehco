@@ -37,7 +37,6 @@ export const FUEL_TYPES = [
 ];
 
 export const EXPENSE_CATEGORIES = [
-  "FUEL",
   "REPAIRS",
   "PARTS",
   "INSURANCE",
