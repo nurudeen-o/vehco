@@ -6,7 +6,7 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { QrCode, ArrowLeft, Wrench, DollarSign, UserMinus, UserCheck, Camera, Trash2, Star } from "lucide-react";
+import { QrCode, ArrowLeft, Wrench, DollarSign, UserMinus, UserCheck, Camera, Trash2, Star, Edit } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { VehicleSpendAnalysis } from "@/components/analytics/VehicleSpendAnalysis";
 
@@ -93,21 +93,17 @@ export default function VehicleDetailPage({
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const reader = new FileReader();
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+        const uploadForm = new FormData();
+        uploadForm.append("file", file);
+        uploadForm.append("caption", caption || file.name);
+        uploadForm.append(
+          "isPrimary",
+          (i === 0 && (!vehicle?.images || vehicle.images.length === 0)).toString()
+        );
 
         await fetch(`/api/vehicles/${id}/images`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            url: dataUrl,
-            caption: caption || file.name,
-            isPrimary: i === 0 && (!vehicle?.images || vehicle.images.length === 0),
-          }),
+          body: uploadForm,
         });
       }
       setCaption("");
@@ -206,6 +202,13 @@ export default function VehicleDetailPage({
           </Link>
           <div className="flex gap-2">
             <VehicleSpendAnalysis currentVehicleId={vehicle.id} buttonLabel="Vehicle Spend" />
+            {canEdit && (
+              <Link href={`/vehicles/${vehicle.id}/edit`}>
+                <Button variant="primary" size="sm">
+                  <Edit className="w-4 h-4" /> Edit Vehicle
+                </Button>
+              </Link>
+            )}
             <Link href={`/vehicles/${vehicle.id}/qr`}>
               <Button variant="outline" size="sm">
                 <QrCode className="w-4 h-4" /> QR Card & Identification

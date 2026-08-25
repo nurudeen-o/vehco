@@ -26,9 +26,11 @@ export const PERMISSION_KEYS = [
   "EDIT_DRIVER",
   "VIEW_MAINTENANCE_RECORDS",
   "RECORD_MAINTENANCE",
+  "EDIT_MAINTENANCE",
   "APPROVE_MAINTENANCE",
   "VIEW_EXPENSES",
   "RECORD_EXPENSE",
+  "EDIT_EXPENSE",
   "VIEW_APPROVALS",
   "EXPORT_REPORTS",
   "VIEW_ANALYTICS",
@@ -38,7 +40,6 @@ export const PERMISSION_KEYS = [
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[number];
 
-/** Default role → allowed permissions (used for seed + fallback). */
 export const DEFAULT_PERMISSIONS: Record<PermissionKey, readonly UserRole[]> = {
   MANAGE_USERS: ["CEO"],
   MANAGE_ROLE_PERMISSIONS: ["CEO"],
@@ -56,10 +57,12 @@ export const DEFAULT_PERMISSIONS: Record<PermissionKey, readonly UserRole[]> = {
 
   VIEW_MAINTENANCE_RECORDS: ["CEO", "MANAGER", "SECRETARY"],
   RECORD_MAINTENANCE: ["CEO", "MANAGER", "SECRETARY"],
+  EDIT_MAINTENANCE: ["CEO", "MANAGER"],
   APPROVE_MAINTENANCE: ["CEO", "MANAGER"],
 
   VIEW_EXPENSES: ["CEO", "MANAGER", "SECRETARY"],
   RECORD_EXPENSE: ["CEO", "MANAGER", "SECRETARY"],
+  EDIT_EXPENSE: ["CEO", "MANAGER"],
 
   VIEW_APPROVALS: ["CEO", "MANAGER"],
   EXPORT_REPORTS: ["CEO", "MANAGER"],
@@ -68,10 +71,8 @@ export const DEFAULT_PERMISSIONS: Record<PermissionKey, readonly UserRole[]> = {
   VIEW_DOCUMENTS: ["CEO", "MANAGER", "SECRETARY"],
 };
 
-/** Legacy alias used by older call sites. */
 export const PERMISSIONS = DEFAULT_PERMISSIONS;
 
-/** Superadmin cells that cannot be turned off for CEO. */
 export const LOCKED_PERMISSIONS: ReadonlyArray<{
   role: UserRole;
   permission: PermissionKey;
@@ -97,10 +98,12 @@ export const PERMISSION_LABELS: Record<PermissionKey, string> = {
 
   VIEW_MAINTENANCE_RECORDS: "View maintenance records",
   RECORD_MAINTENANCE: "Record maintenance",
+  EDIT_MAINTENANCE: "Edit maintenance records",
   APPROVE_MAINTENANCE: "Approve maintenance",
 
   VIEW_EXPENSES: "View expenses",
   RECORD_EXPENSE: "Record expenses",
+  EDIT_EXPENSE: "Edit expense records",
 
   VIEW_APPROVALS: "View approvals",
   EXPORT_REPORTS: "Export reports",
@@ -139,8 +142,10 @@ export const PERMISSION_GROUPS: {
     permissions: [
       "VIEW_MAINTENANCE_RECORDS",
       "RECORD_MAINTENANCE",
+      "EDIT_MAINTENANCE",
       "VIEW_EXPENSES",
       "RECORD_EXPENSE",
+      "EDIT_EXPENSE",
       "VIEW_DOCUMENTS",
     ],
   },
@@ -167,7 +172,6 @@ export function defaultAllows(role: string, permission: PermissionKey): boolean 
   return (allowed as readonly string[]).includes(role);
 }
 
-/** Sync check against code defaults only (UI fallback before session loads). */
 export function hasPermission(
   role: UserRole | string,
   permission: PermissionKey | keyof typeof PERMISSIONS
@@ -184,7 +188,6 @@ export function isSystemRole(role: string): role is UserRole {
   return SYSTEM_ROLES.includes(role as UserRole);
 }
 
-/** Build default RolePermission rows for seed / ensure. */
 export function buildDefaultRolePermissionRows(): {
   role: string;
   permission: PermissionKey;

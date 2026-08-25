@@ -59,9 +59,11 @@ export default async function MaintenancePage() {
                   </tr>
                 ) : (
                   records.map((m) => (
-                    <tr key={m.id} className="hover:bg-slate-50">
-                      <td className="py-3 px-4 font-semibold text-slate-800">
-                        {m.vehicle.name} <span className="font-mono text-xs text-slate-500">({m.vehicle.code})</span>
+                    <tr key={m.id} className="hover:bg-slate-50 cursor-pointer">
+                      <td className="py-3 px-4">
+                        <Link href={`/maintenance/${m.id}`} className="font-semibold text-slate-800 hover:text-[#0F6B4B]">
+                          {m.vehicle.name} <span className="font-mono text-xs text-slate-500">({m.vehicle.code})</span>
+                        </Link>
                       </td>
                       <td className="py-3 px-4 text-slate-700">
                         <div>{m.serviceType}</div>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, Camera, X } from "lucide-react";
 import Link from "next/link";
 import { FUEL_TYPES } from "@/lib/constants";
 
@@ -26,7 +26,6 @@ export default function NewVehiclePage() {
     status: "ACTIVE",
   });
 
-  // Optional image states
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
@@ -37,7 +36,6 @@ export default function NewVehiclePage() {
     const newFiles = Array.from(files);
     setImageFiles((prev) => [...prev, ...newFiles]);
 
-    // Generate previews
     newFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -65,27 +63,17 @@ export default function NewVehiclePage() {
       if (res.ok) {
         const vehicle = await res.json();
 
-        // Upload images if any
-        if (imageFiles.length > 0) {
-          for (let i = 0; i < imageFiles.length; i++) {
-            const file = imageFiles[i];
-            const reader = new FileReader();
-            const dataUrl = await new Promise<string>((resolve, reject) => {
-              reader.onload = () => resolve(reader.result as string);
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            });
+        for (let i = 0; i < imageFiles.length; i++) {
+          const file = imageFiles[i];
+          const uploadForm = new FormData();
+          uploadForm.append("file", file);
+          uploadForm.append("caption", file.name);
+          uploadForm.append("isPrimary", i === 0 ? "true" : "false");
 
-            await fetch(`/api/vehicles/${vehicle.id}/images`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                url: dataUrl,
-                caption: file.name,
-                isPrimary: i === 0,
-              }),
-            });
-          }
+          await fetch(`/api/vehicles/${vehicle.id}/images`, {
+            method: "POST",
+            body: uploadForm,
+          });
         }
 
         router.push("/vehicles");
@@ -233,13 +221,12 @@ export default function NewVehiclePage() {
               </div>
             </div>
 
-            {/* Vehicle Images (Optional) */}
             <div className="pt-4 border-t border-slate-100">
               <label className="block text-xs font-semibold text-slate-700 uppercase mb-2">
                 Vehicle Images (Optional)
               </label>
               <p className="text-xs text-slate-400 mb-3">
-                Add photos of the vehicle — exterior, interior, or documents. Images are uploaded after the vehicle is saved.
+                Add photos of the vehicle — exterior, interior, or documents. Max 5MB per image.
               </p>
 
               <div className="flex flex-wrap gap-3">
@@ -256,7 +243,7 @@ export default function NewVehiclePage() {
                       onClick={() => removeImage(idx)}
                       className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                     >
-                      ×
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
@@ -266,7 +253,7 @@ export default function NewVehiclePage() {
                   <span className="text-[10px] font-medium mt-1">Add Photo</span>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
                     multiple
                     className="hidden"
                     onChange={handleImageSelect}
@@ -282,7 +269,7 @@ export default function NewVehiclePage() {
                 </Button>
               </Link>
               <Button type="submit" variant="primary" disabled={loading}>
-                {loading ? "Registering..." : "Save & Register Vehicle"}
+                {loading ? "Saving..." : "Save & Register Vehicle"}
               </Button>
             </div>
           </form>

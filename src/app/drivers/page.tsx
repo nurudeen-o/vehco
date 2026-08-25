@@ -35,46 +35,48 @@ export default async function DriversPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {drivers.map((driver) => (
-            <Card key={driver.id} className="space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#0F6B4B] text-white flex items-center justify-center font-bold text-sm">
-                    {driver.firstName[0]}{driver.lastName[0]}
+            <Link key={driver.id} href={`/drivers/${driver.id}`}>
+              <Card className="space-y-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#0F6B4B] text-white flex items-center justify-center font-bold text-sm">
+                      {driver.firstName[0]}{driver.lastName[0]}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-base">{driver.firstName} {driver.lastName}</h4>
+                      <span className="text-xs text-slate-500 font-mono">Lic: {driver.licenseNumber}</span>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-base">{driver.firstName} {driver.lastName}</h4>
-                    <span className="text-xs text-slate-500 font-mono">Lic: {driver.licenseNumber}</span>
+                  <Badge variant={driver.employmentStatus === "ACTIVE" ? "success" : "neutral"}>
+                    {driver.employmentStatus}
+                  </Badge>
+                </div>
+
+                <div className="space-y-2 text-xs text-slate-600 pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{driver.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{driver.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Award className="w-3.5 h-3.5 text-slate-400" />
+                    <span>License Expiry: {formatDate(driver.licenseExpiry)}</span>
                   </div>
                 </div>
-                <Badge variant={driver.employmentStatus === "ACTIVE" ? "success" : "neutral"}>
-                  {driver.employmentStatus}
-                </Badge>
-              </div>
 
-              <div className="space-y-2 text-xs text-slate-600 pt-2 border-t border-slate-100">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-3.5 h-3.5 text-slate-400" />
-                  <span>{driver.email}</span>
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-slate-500">Assigned Vehicle:</span>
+                  <span className="font-semibold text-slate-800">
+                    {driver.assignedVehicles.length > 0
+                      ? driver.assignedVehicles[0].code
+                      : "None"}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-3.5 h-3.5 text-slate-400" />
-                  <span>{driver.phone}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Award className="w-3.5 h-3.5 text-slate-400" />
-                  <span>License Expiry: {formatDate(driver.licenseExpiry)}</span>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500">Assigned Vehicle:</span>
-                <span className="font-semibold text-slate-800">
-                  {driver.assignedVehicles.length > 0
-                    ? driver.assignedVehicles[0].code
-                    : "None"}
-                </span>
-              </div>
-            </Card>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>

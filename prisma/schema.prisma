@@ -26,7 +26,7 @@ model User {
   email              String                   @unique
   password           String
   role               String                   @default("SECRETARY")
-  status             String                   @default("ACTIVE") // ACTIVE | SUSPENDED
+  status             String                   @default("ACTIVE")
   suspendedAt        DateTime?
   suspendedReason    String?
   branchId           String?
@@ -135,6 +135,7 @@ model VehicleImage {
   vehicleId  String
   vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   url        String
+  publicId   String?
   caption    String?
   isPrimary  Boolean  @default(false)
   createdAt  DateTime @default(now())

@@ -71,10 +71,12 @@ export default async function ExpensesPage() {
                   </tr>
                 ) : (
                   expenses.map((exp) => (
-                    <tr key={exp.id} className="hover:bg-slate-50">
+                    <tr key={exp.id} className="hover:bg-slate-50 cursor-pointer">
                       <td className="py-3 px-4 text-xs text-slate-600">{formatDate(exp.date)}</td>
-                      <td className="py-3 px-4 font-semibold text-slate-800">
-                        {exp.vehicle.name} <span className="font-mono text-xs text-slate-500">({exp.vehicle.code})</span>
+                      <td className="py-3 px-4">
+                        <Link href={`/expenses/${exp.id}`} className="font-semibold text-slate-800 hover:text-[#0F6B4B]">
+                          {exp.vehicle.name} <span className="font-mono text-xs text-slate-500">({exp.vehicle.code})</span>
+                        </Link>
                       </td>
                       <td className="py-3 px-4 text-xs font-semibold text-[#0F6B4B]">{exp.category}</td>
                       <td className="py-3 px-4 text-slate-600 text-xs">{exp.description || "N/A"}</td>

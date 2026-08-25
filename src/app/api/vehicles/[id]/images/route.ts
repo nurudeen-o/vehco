@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { requirePermission } from "@/lib/permissions-server";
+import { uploadToCloudinary, deleteFromCloudinary } from "@/lib/cloudinary";
 
 export async function POST(
   req: Request,
@@ -18,13 +19,26 @@ export async function POST(
       return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
     }
 
-    const body = await req.json();
-    if (!body.url) {
-      return NextResponse.json({ error: "Image URL is required" }, { status: 400 });
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
+    const caption = formData.get("caption") as string | null;
+    const isPrimary = formData.get("isPrimary") === "true";
+
+    if (!file) {
+      return NextResponse.json({ error: "Image file is required" }, { status: 400 });
     }
 
-    // If this is marked as primary, unset other primaries
-    if (body.isPrimary) {
+    if (!file.type.startsWith("image/")) {
+      return NextResponse.json({ error: "File must be an image" }, { status: 400 });
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "Image must be under 5MB" }, { status: 400 });
+    }
+
+    const { url, publicId } = await uploadToCloudinary(file, `vehico/vehicles/${vehicle.code}`);
+
+    if (isPrimary) {
       await prisma.vehicleImage.updateMany({
         where: { vehicleId: id, isPrimary: true },
         data: { isPrimary: false },
@@ -34,9 +48,10 @@ export async function POST(
     const image = await prisma.vehicleImage.create({
       data: {
         vehicleId: id,
-        url: body.url,
-        caption: body.caption || null,
-        isPrimary: body.isPrimary || false,
+        url,
+        publicId,
+        caption: caption || file.name,
+        isPrimary,
       },
     });
 
@@ -46,12 +61,13 @@ export async function POST(
         action: "ADD_VEHICLE_IMAGE",
         entity: "VehicleImage",
         entityId: image.id,
-        details: `Added image to vehicle ${vehicle.code} by ${gate.session.name}`,
+        details: `Uploaded image to vehicle ${vehicle.code} by ${gate.session.name}`,
       },
     });
 
     return NextResponse.json(image, { status: 201 });
   } catch (error) {
+    console.error("Image upload error:", error);
     return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
   }
 }
@@ -73,7 +89,6 @@ export async function PATCH(
       return NextResponse.json({ error: "imageId is required" }, { status: 400 });
     }
 
-    // If setting as primary, unset others first
     if (isPrimary) {
       await prisma.vehicleImage.updateMany({
         where: { vehicleId: id, isPrimary: true },
@@ -109,9 +124,12 @@ export async function DELETE(
       return NextResponse.json({ error: "imageId is required" }, { status: 400 });
     }
 
-    await prisma.vehicleImage.delete({
-      where: { id: imageId },
-    });
+    const image = await prisma.vehicleImage.findUnique({ where: { id: imageId } });
+    if (image?.publicId) {
+      await deleteFromCloudinary(image.publicId);
+    }
+
+    await prisma.vehicleImage.delete({ where: { id: imageId } });
 
     return NextResponse.json({ success: true });
   } catch (error) {
