@@ -3,6 +3,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { Cloud, CloudOff, RefreshCw, AlertTriangle, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { Capacitor } from "@capacitor/core";
+import type { PluginListenerHandle } from "@capacitor/core";
+import { Network } from "@capacitor/network";
+
+const isNative = Capacitor.isNativePlatform();
 
 interface SyncState {
   isOnline: boolean;
@@ -37,7 +42,7 @@ export function SyncStatusBadge() {
   }, []);
 
   const triggerSync = async () => {
-    if (triggering || state.isSyncing) return;
+    if (isNative || triggering || state.isSyncing) return;
     setTriggering(true);
     try {
       const res = await fetch("/api/sync/trigger", { method: "POST" });
@@ -54,6 +59,25 @@ export function SyncStatusBadge() {
   };
 
   useEffect(() => {
+    if (isNative) {
+      let listener: PluginListenerHandle | undefined;
+      Network.getStatus()
+        .then((status) => {
+          setState((prev) => ({ ...prev, isOnline: status.connected }));
+        })
+        .catch(() => {});
+      Network.addListener("networkStatusChange", (status) => {
+        setState((prev) => ({ ...prev, isOnline: status.connected }));
+      })
+        .then((handle) => {
+          listener = handle;
+        })
+        .catch(() => {});
+      return () => {
+        listener?.remove();
+      };
+    }
+
     fetchStatus();
     triggerSync();
 
@@ -121,23 +145,25 @@ export function SyncStatusBadge() {
         ) : (
           <>
             <CheckCircle className="w-3.5 h-3.5" />
-            <span>Cloud Synced</span>
+            <span>{isNative ? "Online" : "Cloud Synced"}</span>
           </>
         )}
       </div>
 
       {/* Manual Sync Button */}
-      <button
-        onClick={triggerSync}
-        disabled={isBusy}
-        className="p-1 text-gray-500 hover:text-gray-900 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
-        title="Sync with Turso and Cloudinary"
-      >
-        <RefreshCw className={`w-3.5 h-3.5 ${isBusy ? "animate-spin text-blue-600" : ""}`} />
-      </button>
+      {!isNative && (
+        <button
+          onClick={triggerSync}
+          disabled={isBusy}
+          className="p-1 text-gray-500 hover:text-gray-900 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+          title="Sync with Turso and Cloudinary"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isBusy ? "animate-spin text-blue-600" : ""}`} />
+        </button>
+      )}
 
       {/* Conflict review alert if any */}
-      {state.conflictCount > 0 && (
+      {!isNative && state.conflictCount > 0 && (
         <Link
           href="/settings/conflicts"
           className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 border border-red-500/20 hover:bg-red-500/20 transition-colors"
