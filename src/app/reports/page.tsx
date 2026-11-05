@@ -14,7 +14,14 @@ export default function ReportsPage() {
   ];
 
   const handleDownload = (type: string, format: string) => {
-    window.open(`/api/reports/${type.toLowerCase()}?format=${format}`, '_blank');
+    const url = `/api/reports/${type.toLowerCase()}?format=${format}`;
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `faco_${type.toLowerCase()}_report.${format === "excel" ? "xlsx" : format}`;
+    link.target = "_self";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (

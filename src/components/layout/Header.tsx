@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bell, Search, LogOut, Menu } from "lucide-react";
 import { getRoleLabel } from "@/lib/permissions";
 import { useShell } from "./AppShell";
+import { SyncStatusBadge } from "@/components/SyncStatusBadge";
 
 export function Header({ title }: { title?: string }) {
   const router = useRouter();
@@ -66,6 +67,9 @@ export function Header({ title }: { title?: string }) {
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-4">
+        {/* Offline & Sync Status */}
+        <SyncStatusBadge />
+
         {/* Desktop search */}
         <div className="relative hidden md:block">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />

@@ -5,14 +5,12 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient(): PrismaClient {
+  const useRemote = process.env.USE_REMOTE_TURSO === "true";
   const tursoUrl = process.env.TURSO_DATABASE_URL;
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
-  // Production / remote: use Turso via libSQL driver adapter.
-  // Only activate when both a libsql URL and an auth token are present.
-  if (tursoUrl && tursoUrl.startsWith("libsql") && tursoToken) {
-    // Lazy require so local SQLite builds work without adapter packages at import time
-    // when env is not set. Packages are still installed for deploy.
+  // Only connect directly to Turso if explicitly enabled (e.g. for cloud web deploy)
+  if (useRemote && tursoUrl && tursoUrl.startsWith("libsql") && tursoToken) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { PrismaLibSQL } = require("@prisma/adapter-libsql") as typeof import("@prisma/adapter-libsql");
 
@@ -27,13 +25,19 @@ function createPrismaClient(): PrismaClient {
     });
   }
 
-  // Local development: file SQLite via DATABASE_URL
+  // Local-first SQLite: default for desktop app and local offline use
   return new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+const existing = globalForPrisma.prisma;
+// Invalidate stale Prisma instance in dev mode if schema has added new models
+const isStale =
+  existing &&
+  (!(existing as any).contactMessage || !(existing as any).syncConflict);
+
+export const prisma = existing && !isStale ? existing : createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

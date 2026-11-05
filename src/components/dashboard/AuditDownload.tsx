@@ -23,7 +23,14 @@ export function AuditDownload() {
   if (!canDownload) return null;
 
   const download = (format: string) => {
-    window.open(`/api/audit-logs?format=${format}`, "_blank");
+    const url = `/api/audit-logs?format=${format}`;
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `faco_audit_logs.${format === "excel" ? "xlsx" : format}`;
+    link.target = "_self";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (

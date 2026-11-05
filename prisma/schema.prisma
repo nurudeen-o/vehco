@@ -1,6 +1,7 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
+  binaryTargets   = ["native", "windows"]
 }
 
 datasource db {
@@ -9,65 +10,90 @@ datasource db {
 }
 
 model Branch {
-  id        String    @id @default(uuid())
-  name      String
-  code      String    @unique
-  location  String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  users     User[]
-  vehicles  Vehicle[]
-  drivers   Driver[]
+  id             String    @id @default(uuid())
+  name           String
+  code           String    @unique
+  location       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
+  deletedAt      DateTime?
+  users          User[]
+  vehicles       Vehicle[]
+  drivers        Driver[]
 }
 
 model User {
-  id                 String                   @id @default(uuid())
-  name               String
-  email              String                   @unique
-  password           String
-  role               String                   @default("SECRETARY")
-  status             String                   @default("ACTIVE")
-  suspendedAt        DateTime?
-  suspendedReason    String?
-  branchId           String?
-  branch             Branch?                  @relation(fields: [branchId], references: [id])
-  createdAt          DateTime                 @default(now())
-  updatedAt          DateTime                 @updatedAt
-  approvedRecords    MaintenanceRecord[]      @relation("ApprovedBy")
-  requestedApprovals Approval[]               @relation("RequestedBy")
-  givenApprovals     Approval[]               @relation("Approver")
-  notifications      Notification[]
-  auditLogs          AuditLog[]
+  id                  String                   @id @default(uuid())
+  name                String
+  email               String                   @unique
+  password            String
+  role                String                   @default("SECRETARY")
+  status              String                   @default("ACTIVE")
+  suspendedAt         DateTime?
+  suspendedReason     String?
+  branchId            String?
+  branch              Branch?                  @relation(fields: [branchId], references: [id])
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  synced              Boolean                  @default(false)
+  syncStatus          String                   @default("PENDING")
+  lastSyncedAt        DateTime?
+  updatedAtLocal      DateTime                 @default(now())
+  deletedAt           DateTime?
+  approvedRecords     MaintenanceRecord[]      @relation("ApprovedBy")
+  requestedApprovals  Approval[]               @relation("RequestedBy")
+  givenApprovals      Approval[]               @relation("Approver")
+  notifications       Notification[]
+  auditLogs           AuditLog[]
   permissionOverrides UserPermissionOverride[]
 }
 
 model Role {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  label       String
-  isSystem    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String    @id @default(uuid())
+  name           String    @unique
+  label          String
+  isSystem       Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
+  deletedAt      DateTime?
 }
 
 model RolePermission {
-  id          String   @id @default(uuid())
-  role        String
-  permission  String
-  allowed     Boolean  @default(true)
-  updatedAt   DateTime @updatedAt
-  updatedById String?
+  id             String    @id @default(uuid())
+  role           String
+  permission     String
+  allowed        Boolean   @default(true)
+  updatedAt      DateTime  @updatedAt
+  updatedById    String?
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
+  deletedAt      DateTime?
 
   @@unique([role, permission])
 }
 
 model UserPermissionOverride {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  permission String
-  allowed    Boolean
-  updatedAt  DateTime @updatedAt
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission     String
+  allowed        Boolean
+  updatedAt      DateTime  @updatedAt
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
+  deletedAt      DateTime?
 
   @@unique([userId, permission])
 }
@@ -92,6 +118,10 @@ model Vehicle {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   deletedAt          DateTime?
+  synced             Boolean             @default(false)
+  syncStatus         String              @default("PENDING")
+  lastSyncedAt       DateTime?
+  updatedAtLocal     DateTime            @default(now())
   assignments        VehicleAssignment[]
   maintenanceRecords MaintenanceRecord[]
   expenses           Expense[]
@@ -100,64 +130,85 @@ model Vehicle {
 }
 
 model Driver {
-  id                String              @id @default(uuid())
-  firstName         String
-  lastName          String
-  email             String              @unique
-  phone             String
-  licenseNumber     String              @unique
-  licenseExpiry     DateTime
-  employmentStatus  String              @default("ACTIVE")
-  emergencyContact  String?
-  branchId          String?
-  branch            Branch?             @relation(fields: [branchId], references: [id])
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  assignedVehicles  Vehicle[]
-  assignments       VehicleAssignment[]
-  documents         Document[]
+  id               String              @id @default(uuid())
+  firstName        String
+  lastName         String
+  email            String              @unique
+  phone            String
+  licenseNumber    String              @unique
+  licenseExpiry    DateTime
+  employmentStatus String              @default("ACTIVE")
+  emergencyContact String?
+  branchId         String?
+  branch           Branch?             @relation(fields: [branchId], references: [id])
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  deletedAt        DateTime?
+  synced           Boolean             @default(false)
+  syncStatus       String              @default("PENDING")
+  lastSyncedAt     DateTime?
+  updatedAtLocal   DateTime            @default(now())
+  assignedVehicles Vehicle[]
+  assignments      VehicleAssignment[]
+  documents        Document[]
 }
 
 model VehicleAssignment {
-  id        String    @id @default(uuid())
-  vehicleId String
-  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  driverId  String
-  driver    Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  startDate DateTime  @default(now())
-  endDate   DateTime?
-  notes     String?
-  createdAt DateTime  @default(now())
+  id             String    @id @default(uuid())
+  vehicleId      String
+  vehicle        Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverId       String
+  driver         Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  startDate      DateTime  @default(now())
+  endDate        DateTime?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
 }
 
 model VehicleImage {
-  id         String   @id @default(uuid())
-  vehicleId  String
-  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  url        String
-  publicId   String?
-  caption    String?
-  isPrimary  Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  id             String    @id @default(uuid())
+  vehicleId      String
+  vehicle        Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  url            String
+  publicId       String?
+  caption        String?
+  isPrimary      Boolean   @default(false)
+  localFilePath  String?
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
 }
 
 model MaintenanceRecord {
-  id             String             @id @default(uuid())
-  vehicleId      String
-  vehicle        Vehicle            @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  serviceType    String
-  labourCost     Float              @default(0.0)
-  partsCost      Float              @default(0.0)
-  totalCost      Float
-  vendor         String?
-  receiptUrl     String?
-  photosUrl      String?
+  id              String             @id @default(uuid())
+  vehicleId       String
+  vehicle         Vehicle            @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  serviceType     String
+  labourCost      Float              @default(0.0)
+  partsCost       Float              @default(0.0)
+  totalCost       Float
+  vendor          String?
+  receiptUrl      String?
+  photosUrl       String?
   nextServiceDate DateTime?
-  status         String             @default("PENDING")
-  approvedById   String?
-  approvedBy     User?              @relation("ApprovedBy", fields: [approvedById], references: [id])
-  createdAt      DateTime           @default(now())
-  parts          PartInstallation[]
+  status          String             @default("PENDING")
+  approvedById    String?
+  approvedBy      User?              @relation("ApprovedBy", fields: [approvedById], references: [id])
+  createdAt       DateTime           @default(now())
+  deletedAt       DateTime?
+  synced          Boolean            @default(false)
+  syncStatus      String             @default("PENDING")
+  lastSyncedAt    DateTime?
+  updatedAtLocal  DateTime           @default(now())
+  parts           PartInstallation[]
 }
 
 model PartInstallation {
@@ -170,64 +221,122 @@ model PartInstallation {
   unitCost            Float
   totalCost           Float
   createdAt           DateTime          @default(now())
+  deletedAt           DateTime?
+  synced              Boolean           @default(false)
+  syncStatus          String            @default("PENDING")
+  lastSyncedAt        DateTime?
+  updatedAtLocal      DateTime          @default(now())
 }
 
 model Expense {
-  id          String   @id @default(uuid())
-  vehicleId   String
-  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  category    String
-  amount      Float
-  description String?
-  date        DateTime @default(now())
-  receiptUrl  String?
-  createdAt   DateTime @default(now())
+  id             String    @id @default(uuid())
+  vehicleId      String
+  vehicle        Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  category       String
+  amount         Float
+  description    String?
+  date           DateTime  @default(now())
+  receiptUrl     String?
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
 }
 
 model Document {
-  id         String    @id @default(uuid())
-  title      String
-  type       String
-  fileUrl    String
-  expiryDate DateTime?
-  vehicleId  String?
-  vehicle    Vehicle?  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  driverId   String?
-  driver     Driver?   @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  createdAt  DateTime  @default(now())
+  id             String    @id @default(uuid())
+  title          String
+  type           String
+  fileUrl        String
+  expiryDate     DateTime?
+  vehicleId      String?
+  vehicle        Vehicle?  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverId       String?
+  driver         Driver?   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
 }
 
 model Approval {
-  id            String   @id @default(uuid())
-  entityType    String
-  entityId      String
-  requestedById String
-  requestedBy   User     @relation("RequestedBy", fields: [requestedById], references: [id])
-  approverId    String?
-  approver      User?    @relation("Approver", fields: [approverId], references: [id])
-  status        String   @default("PENDING")
-  comments      String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String    @id @default(uuid())
+  entityType     String
+  entityId       String
+  requestedById  String
+  requestedBy    User      @relation("RequestedBy", fields: [requestedById], references: [id])
+  approverId     String?
+  approver       User?     @relation("Approver", fields: [approverId], references: [id])
+  status         String    @default("PENDING")
+  comments       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
 }
 
 model Notification {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  message   String
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  message        String
+  read           Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
 }
 
 model AuditLog {
-  id        String   @id @default(uuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  action    String
-  entity    String
-  entityId  String?
-  details   String?
-  createdAt DateTime @default(now())
+  id             String    @id @default(uuid())
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id])
+  action         String
+  entity         String
+  entityId       String?
+  details        String?
+  createdAt      DateTime  @default(now())
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
+}
+
+model SyncConflict {
+  id          String    @id @default(uuid())
+  entity      String
+  entityId    String
+  localData   String
+  remoteData  String
+  resolved    Boolean   @default(false)
+  resolution  String?
+  createdAt   DateTime  @default(now())
+  resolvedAt  DateTime?
+}
+
+model ContactMessage {
+  id             String    @id @default(uuid())
+  name           String
+  email          String
+  phone          String?
+  subject        String
+  message        String
+  status         String    @default("UNREAD") // UNREAD | READ | ARCHIVED | REPLIED
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  synced         Boolean   @default(false)
+  syncStatus     String    @default("PENDING")
+  lastSyncedAt   DateTime?
+  updatedAtLocal DateTime  @default(now())
 }

@@ -8,7 +8,7 @@ cloudinary.config({
 
 export async function uploadToCloudinary(
   file: File,
-  folder: string = "vehico/vehicles"
+  folder: string = "faco/vehicles"
 ): Promise<{ url: string; publicId: string }> {
   const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -33,6 +33,39 @@ export async function uploadToCloudinary(
 
     uploadStream.end(buffer);
   });
+}
+
+export async function uploadLocalImageToCloudinary(
+  filePath: string,
+  folder: string = "faco/vehicles"
+): Promise<{ url: string; publicId: string }> {
+  const result = await cloudinary.uploader.upload(filePath, {
+    folder,
+    resource_type: "image",
+    transformation: [
+      { width: 1200, height: 800, crop: "limit", quality: "auto" },
+    ],
+  });
+
+  return {
+    url: result.secure_url,
+    publicId: result.public_id,
+  };
+}
+
+export async function uploadLocalDocumentToCloudinary(
+  filePath: string,
+  folder: string = "faco/documents"
+): Promise<{ url: string; publicId: string }> {
+  const result = await cloudinary.uploader.upload(filePath, {
+    folder,
+    resource_type: "auto",
+  });
+
+  return {
+    url: result.secure_url,
+    publicId: result.public_id,
+  };
 }
 
 export async function deleteFromCloudinary(publicId: string): Promise<void> {

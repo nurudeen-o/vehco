@@ -7,6 +7,8 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
+
+
 export async function generateMetadata({
   params,
 }: {
@@ -71,16 +73,37 @@ export default async function PublicQRPage({
 }) {
   const { vehicleCode } = await params;
 
-  const vehicle = await prisma.vehicle.findUnique({
-    where: { code: vehicleCode },
-    include: {
-      assignedDriver: true,
-      branch: true,
-    },
-  });
+  let vehicle = null;
+  try {
+    vehicle = await prisma.vehicle.findUnique({
+      where: { code: vehicleCode },
+      include: {
+        assignedDriver: true,
+        branch: true,
+      },
+    });
+  } catch {}
 
   if (!vehicle || vehicle.deletedAt) {
-    notFound();
+    if (process.env.CAPACITOR_BUILD === "true") {
+      vehicle = {
+        id: "_placeholder",
+        code: vehicleCode,
+        name: "Fleet Vehicle",
+        registrationNumber: "REG-000",
+        manufacturer: "Fleet",
+        model: "Standard",
+        year: 2024,
+        colour: "White",
+        fuelType: "PETROL",
+        status: "ACTIVE",
+        deletedAt: null,
+        assignedDriver: null,
+        branch: null,
+      } as any;
+    } else {
+      notFound();
+    }
   }
 
   const driver = vehicle.assignedDriver;

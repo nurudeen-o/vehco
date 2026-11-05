@@ -1,5 +1,6 @@
 "use client";
 
+import "@/lib/mobile-api";
 import { usePathname } from "next/navigation";
 import { AppShell } from "./AppShell";
 

@@ -27,7 +27,8 @@ export function middleware(request: NextRequest) {
   const isPublicPath =
     pathname === "/login" ||
     pathname.startsWith("/qr") ||
-    pathname.startsWith("/api/public");
+    pathname.startsWith("/api/public") ||
+    pathname.startsWith("/api/sync/status");
   const isApiAuth = pathname.startsWith("/api/auth") || pathname.startsWith("/api/test-db");
   const isStatic = pathname.includes(".") || pathname.startsWith("/_next");
 

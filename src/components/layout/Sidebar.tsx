@@ -14,6 +14,7 @@ import {
   BarChart3,
   Settings,
   X,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,7 @@ const navigation: NavGroup[] = [
       { name: "Maintenance", href: "/maintenance", icon: Wrench, permission: "VIEW_MAINTENANCE_RECORDS" },
       { name: "Expenses", href: "/expenses", icon: DollarSign, permission: "VIEW_EXPENSES" },
       { name: "Documents", href: "/documents", icon: FileText, permission: "VIEW_DOCUMENTS" },
+      { name: "Inquiries", href: "/messages", icon: MessageSquare },
     ],
   },
   {

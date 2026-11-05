@@ -7,10 +7,19 @@ plan
 .env.local
 build
 dist
-scripts
+scripts/*
+!scripts/build-mobile.mjs
+out
+.capacitor
+
+android/
+ios/
+public/uploads/
 
 *.md
-# Local Netlify folder
 .netlify
 *.lock
 .DS_Store
+
+dist-electron/
+*.tsbuildinfo
