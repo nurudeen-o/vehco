@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Car, Shield, Lock, User } from "lucide-react";
 import { AppLogo } from "@/components/shared/AppLogo";
-import { hasApiBaseUrl } from "@/lib/offline/config";
+import { hasApiBaseUrl, isNativePlatform } from "@/lib/offline/config";
 
 const DEMO_CREDENTIALS = [
   {
@@ -54,7 +54,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    if (!hasApiBaseUrl()) {
+    if (isNativePlatform() && !hasApiBaseUrl()) {
       setError("This build has no sync server configured. Please install the latest app build.");
       return;
     }
