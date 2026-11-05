@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { QrCode, ArrowLeft, Wrench, DollarSign, UserMinus, UserCheck, Camera, Trash2, Star, Edit } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { resolveMediaUrl } from "@/lib/offline/config";
 import { VehicleSpendAnalysis } from "@/components/analytics/VehicleSpendAnalysis";
 
 export default function VehicleDetailPage() {
@@ -191,13 +192,13 @@ export default function VehicleDetailPage() {
     <>
       <Header title={`Vehicle Details - ${vehicle.code}`} />
       <div className="page-pad">
-        <div className="flex items-center justify-between">
-          <Link href="/vehicles">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Link href="/vehicles" className="self-start">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" /> Back to Vehicles
             </Button>
           </Link>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <VehicleSpendAnalysis currentVehicleId={vehicle.id} buttonLabel="Vehicle Spend" />
             {canEdit && (
               <Link href={`/vehicles/view/edit?id=${vehicle.id}`}>
@@ -233,6 +234,14 @@ export default function VehicleDetailPage() {
                 </Badge>
               }
             />
+
+            {primaryImage && (
+              <img
+                src={resolveMediaUrl(primaryImage.url)}
+                alt={vehicle.name}
+                className="w-full h-44 sm:h-56 object-cover rounded-xl border border-slate-200 mb-4"
+              />
+            )}
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm py-2">
               <div>
@@ -383,11 +392,11 @@ export default function VehicleDetailPage() {
           {!vehicle.images || vehicle.images.length === 0 ? (
             <p className="text-slate-400 text-sm">No images uploaded yet.</p>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {vehicle.images.map((img: any) => (
                 <div key={img.id} className="relative group rounded-xl overflow-hidden border border-slate-200">
                   <img
-                    src={img.url}
+                    src={resolveMediaUrl(img.url)}
                     alt={img.caption || "Vehicle image"}
                     className="w-full h-36 object-cover"
                   />

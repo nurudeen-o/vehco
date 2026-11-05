@@ -51,7 +51,7 @@ export function Header({ title }: { title?: string }) {
   };
 
   return (
-    <header className="bg-white border-b border-slate-200 h-14 sm:h-16 px-3 sm:px-6 flex items-center justify-between no-print sticky top-0 z-30">
+    <header className="bg-white border-b border-slate-200 h-16 px-3 sm:px-6 flex items-center justify-between no-print sticky top-0 z-30">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           type="button"

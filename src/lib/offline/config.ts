@@ -35,6 +35,14 @@ export function hasApiBaseUrl(): boolean {
   return getApiBaseUrl().length > 0;
 }
 
+export function resolveMediaUrl(url: string): string {
+  if (!url) return url;
+  if (/^(https?:|data:|blob:|capacitor:)/i.test(url)) return url;
+  const base = getApiBaseUrl();
+  if (!base) return url;
+  return `${base}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
 export function resolveApiUrl(path: string): string {
   if (path.startsWith("http://") || path.startsWith("https://")) {
     if (

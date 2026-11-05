@@ -22,6 +22,7 @@ import {
   User,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { resolveMediaUrl } from "@/lib/offline/config";
 
 interface DocumentItem {
   id: string;
@@ -210,7 +211,7 @@ export default function DocumentsPage() {
    */
   const handleDownload = (fileUrl: string, docTitle: string) => {
     const link = document.createElement("a");
-    link.href = fileUrl;
+    link.href = resolveMediaUrl(fileUrl);
     link.download = docTitle || "document";
     link.target = "_self";
     document.body.appendChild(link);
