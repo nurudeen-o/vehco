@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Car, Shield, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Car, Shield, Lock, User, Server } from "lucide-react";
 import { AppLogo } from "@/components/shared/AppLogo";
+import { getApiBaseUrl, hasApiBaseUrl, setApiBaseUrl } from "@/lib/offline/config";
 
 const DEMO_CREDENTIALS = [
   {
@@ -42,6 +43,28 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [serverUrl, setServerUrl] = useState("");
+  const [showServer, setShowServer] = useState(false);
+  const [serverConfigured, setServerConfigured] = useState(true);
+
+  useEffect(() => {
+    const configured = getApiBaseUrl();
+    setServerUrl(configured);
+    setServerConfigured(Boolean(configured));
+    setShowServer(!configured);
+  }, []);
+
+  const saveServer = () => {
+    const clean = serverUrl.trim();
+    if (!/^https?:\/\//i.test(clean)) {
+      setError("Enter the full server URL, e.g. https://your-site.netlify.app");
+      return;
+    }
+    setApiBaseUrl(clean);
+    setServerConfigured(true);
+    setShowServer(false);
+    setError("");
+  };
 
   const populateCredentials = (cred: typeof DEMO_CREDENTIALS[0]) => {
     setEmail(cred.email);
@@ -52,6 +75,13 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!hasApiBaseUrl()) {
+      setError("No sync server is configured. Enter the server address below, then sign in.");
+      setShowServer(true);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -240,6 +270,49 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <div className="pt-1">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setShowServer((value) => !value)}
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 underline hover:text-slate-700"
+              >
+                <Server className="w-3 h-3" />
+                {serverConfigured ? "Sync server" : "Set sync server"}
+              </button>
+              {serverConfigured && !showServer && (
+                <span className="text-[10px] text-slate-400 truncate max-w-[55%]">
+                  {serverUrl}
+                </span>
+              )}
+            </div>
+
+            {showServer && (
+              <div className="mt-2 space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={serverUrl}
+                    onChange={(event) => setServerUrl(event.target.value)}
+                    placeholder="https://your-site.netlify.app"
+                    className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#0F6B4B] focus:border-[#0F6B4B] bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={saveServer}
+                    className="px-3 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white rounded-lg transition-colors"
+                  >
+                    Save
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Used only to sync. The app keeps working offline with data stored on this
+                  device.
+                </p>
+              </div>
+            )}
+          </div>
 
           <p className="text-center text-[11px] text-slate-400">
             This is a secured internal system. Unauthorized access is prohibited.

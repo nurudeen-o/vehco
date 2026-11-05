@@ -56,7 +56,11 @@ export async function offlineRequest({
     const cached = await cacheGet<unknown>(path).catch(() => undefined);
     if (cached !== undefined) return jsonResponse(cached, 200);
     return jsonResponse(
-      { error: "You are offline. This data has not been synced to this device yet." },
+      {
+        error: remote
+          ? "You are offline. This data has not been synced to this device yet."
+          : "No sync server is configured. Set the server address on the sign-in screen.",
+      },
       503
     );
   }
@@ -81,7 +85,11 @@ export async function offlineRequest({
 
   if (path.startsWith("/api/auth/")) {
     return jsonResponse(
-      { error: "Authentication requires an internet connection." },
+      {
+        error: remote
+          ? "Could not reach the sync server. Check your internet connection and the server address."
+          : "No sync server is configured. Enter the server address below and sign in again.",
+      },
       503
     );
   }

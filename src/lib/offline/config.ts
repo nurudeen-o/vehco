@@ -1,14 +1,38 @@
 import { Capacitor } from "@capacitor/core";
 
 const FALLBACK_API_URL = "";
+const STORAGE_KEY = "faco.syncUrl";
 
 export function isNativePlatform(): boolean {
   return typeof window !== "undefined" && Capacitor.isNativePlatform();
 }
 
+function storedUrl(): string {
+  if (typeof localStorage === "undefined") return "";
+  try {
+    return (localStorage.getItem(STORAGE_KEY) || "").trim();
+  } catch {
+    return "";
+  }
+}
+
 export function getApiBaseUrl(): string {
-  const configured = (process.env.NEXT_PUBLIC_API_URL || "").trim() || FALLBACK_API_URL;
+  const configured =
+    storedUrl() || (process.env.NEXT_PUBLIC_API_URL || "").trim() || FALLBACK_API_URL;
   return configured.replace(/\/+$/, "");
+}
+
+export function setApiBaseUrl(url: string): void {
+  if (typeof localStorage === "undefined") return;
+  try {
+    const clean = url.trim().replace(/\/+$/, "");
+    if (clean) localStorage.setItem(STORAGE_KEY, clean);
+    else localStorage.removeItem(STORAGE_KEY);
+  } catch {}
+}
+
+export function hasApiBaseUrl(): boolean {
+  return getApiBaseUrl().length > 0;
 }
 
 export function resolveApiUrl(path: string): string {

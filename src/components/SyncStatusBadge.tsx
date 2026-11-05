@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Capacitor } from "@capacitor/core";
 import { Network } from "@capacitor/network";
 import { flushQueue, getSyncSummary, subscribeSync } from "@/lib/offline/sync";
+import { hasApiBaseUrl } from "@/lib/offline/config";
 
 const isNative = Capacitor.isNativePlatform();
 
@@ -18,12 +19,14 @@ function NativeSyncBadge() {
   const [pending, setPending] = useState(0);
   const [failed, setFailed] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [serverConfigured, setServerConfigured] = useState(true);
 
   const refresh = useCallback(async () => {
     const summary = await getSyncSummary();
     setOnline(summary.online);
     setPending(summary.pending);
     setFailed(summary.failed);
+    setServerConfigured(hasApiBaseUrl());
   }, []);
 
   useEffect(() => {
@@ -52,7 +55,9 @@ function NativeSyncBadge() {
     }
   };
 
-  const label = busy
+  const label = !serverConfigured
+    ? "Set server"
+    : busy
     ? "Syncing..."
     : !online
     ? `Offline${pending > 0 ? ` (${pending})` : ""}`
@@ -64,7 +69,9 @@ function NativeSyncBadge() {
     <div className="flex items-center gap-2">
       <div
         className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-          !online
+          !serverConfigured
+            ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+            : !online
             ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
             : busy
             ? "bg-blue-500/10 text-blue-600 border-blue-500/20"
@@ -73,14 +80,21 @@ function NativeSyncBadge() {
             : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
         }`}
         title={
-          !online
+          !serverConfigured
+            ? "No sync server configured. Set the address on the sign-in screen."
+            : !online
             ? "You are offline. Changes are stored on this device and sync when you reconnect."
             : pending > 0
             ? `${pending} change(s) waiting to sync`
             : "All local changes are synced"
         }
       >
-        {!online ? (
+        {!serverConfigured ? (
+          <>
+            <CloudOff className="w-3.5 h-3.5" />
+            <span>{label}</span>
+          </>
+        ) : !online ? (
           <>
             <CloudOff className="w-3.5 h-3.5" />
             <span>{label}</span>
@@ -105,7 +119,7 @@ function NativeSyncBadge() {
 
       <button
         onClick={syncNow}
-        disabled={busy || !online}
+        disabled={busy || !online || !serverConfigured}
         className="p-1 text-gray-500 hover:text-gray-900 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
         title="Sync now"
       >
