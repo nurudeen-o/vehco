@@ -65,7 +65,12 @@ export default function LoginPage() {
         router.push("/dashboard");
         router.refresh();
       } else {
-        setError(data.error || "Authentication failed.");
+        const apiError = data?.error;
+        const message =
+          typeof apiError === "string"
+            ? apiError
+            : apiError?.message || data?.message || "Authentication failed.";
+        setError(message);
         setLoading(false);
       }
     } catch (err) {
