@@ -138,6 +138,27 @@ export async function getSyncSummary(): Promise<SyncSummary> {
   return { online, pending, failed, lastSyncedAt: lastSyncedAt ?? null };
 }
 
+const CORE_ENDPOINTS = [
+  "/api/vehicles",
+  "/api/drivers",
+  "/api/expenses",
+  "/api/maintenance",
+  "/api/messages",
+  "/api/documents",
+];
+
+export async function prefetchCoreData(): Promise<void> {
+  if (!isNativePlatform() || !getApiBaseUrl() || !online) return;
+
+  await Promise.all(
+    CORE_ENDPOINTS.map((path) =>
+      fetch(path, { credentials: "include" }).catch(() => undefined)
+    )
+  );
+  await metaSet("prefetchedAt", Date.now());
+  notifySync();
+}
+
 export function startSyncEngine(): void {
   if (started || typeof window === "undefined") return;
   started = true;

@@ -2,12 +2,32 @@ import { cacheGet, cachePut, queueAdd } from "./db";
 import { invalidateResource, notifySync, setOnline } from "./sync";
 
 const MUTATION_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const LIST_ENTITIES = ["vehicles", "drivers", "expenses", "maintenance"];
 
 function jsonResponse(data: unknown, status: number): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+function detailKey(path: string, item: unknown): string | null {
+  if (!item || typeof item !== "object") return null;
+  const id = (item as { id?: unknown }).id;
+  if (typeof id !== "string" || !id) return null;
+  const match = path.split("?")[0].match(/^\/api\/([a-z-]+)$/);
+  if (!match || !LIST_ENTITIES.includes(match[1])) return null;
+  return `/api/${match[1]}/${id}`;
+}
+
+async function cachePayload(path: string, data: unknown): Promise<void> {
+  await cachePut(path, data);
+
+  if (!Array.isArray(data)) return;
+  const keys = data
+    .map((item) => detailKey(path, item))
+    .filter((key): key is string => Boolean(key));
+  await Promise.all(keys.map((key, index) => cachePut(key, data[index])));
 }
 
 export type OfflineRequestArgs = {
@@ -41,11 +61,10 @@ export async function offlineRequest({
         if (response.ok) {
           const type = response.headers.get("content-type") || "";
           if (type.includes("application/json")) {
-            response
-              .clone()
-              .json()
-              .then((data) => cachePut(path, data))
-              .catch(() => {});
+            try {
+              const data = await response.clone().json();
+              await cachePayload(path, data);
+            } catch {}
           }
         }
         return response;

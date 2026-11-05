@@ -3,6 +3,7 @@
 import "@/lib/mobile-api";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { prefetchCoreData } from "@/lib/offline/sync";
 import { AppShell } from "./AppShell";
 
 const PUBLIC_PATHS = ["/login", "/qr"];
@@ -30,6 +31,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
         if (cancelled) return;
         if (data?.authenticated && data?.user) {
           setAuthed(true);
+          prefetchCoreData();
         } else {
           router.replace("/login");
         }

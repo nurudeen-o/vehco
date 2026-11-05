@@ -196,6 +196,11 @@ function WebSyncBadge() {
       fetchStatus();
     }, 15000);
 
+    const autoSync = setInterval(() => {
+      if (!navigator.onLine) return;
+      fetch("/api/sync/trigger", { method: "POST" }).catch(() => {});
+    }, 300000);
+
     const handleOnline = () => {
       setState((prev) => ({ ...prev, isOnline: true }));
       triggerSync();
@@ -210,6 +215,7 @@ function WebSyncBadge() {
 
     return () => {
       clearInterval(interval);
+      clearInterval(autoSync);
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
