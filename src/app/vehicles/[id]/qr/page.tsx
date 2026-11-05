@@ -18,13 +18,15 @@ export default function VehicleQRPage() {
   const [cardFormat, setCardFormat] = useState<"card" | "sticker" | "tag">("card");
 
   useEffect(() => {
+    if (!id) return;
     fetch(`/api/vehicles/${id}`)
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        if (!data?.id) return;
         setVehicle(data);
-        const publicUrl = buildVerifyUrl(data.code);
-        QRCode.toDataURL(publicUrl, { width: 300, margin: 2 }).then(setQrDataUrl);
-      });
+        QRCode.toDataURL(buildVerifyUrl(data.code), { width: 300, margin: 2 }).then(setQrDataUrl);
+      })
+      .catch(() => {});
   }, [id]);
 
   if (!vehicle) {
@@ -128,7 +130,7 @@ export default function VehicleQRPage() {
 
               <div className="bg-slate-50 border-t border-slate-200 px-4 py-2 text-[10px] text-slate-500 flex justify-between items-center">
                 <span>Scan QR for instant verification</span>
-                <span className="font-mono text-[9px]">ID: {vehicle.id.slice(0, 8)}</span>
+                <span className="font-mono text-[9px]">ID: {String(vehicle.id || "").slice(0, 8)}</span>
               </div>
             </div>
           )}
