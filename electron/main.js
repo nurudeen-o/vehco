@@ -81,27 +81,35 @@ function initLogging() {
 }
 
 // 2. User Data & Environment Setup
+function loadEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  try {
+    require("dotenv").config({ path: filePath, override: false });
+  } catch (_) {}
+}
+
 function setupEnvironment() {
-  const envPath = path.join(appRoot, ".env.local");
-  if (fs.existsSync(envPath)) {
-    try {
-      require("dotenv").config({ path: envPath });
-    } catch (_) {}
-  }
-  if (!process.env.TURSO_DATABASE_URL) {
-    process.env.TURSO_DATABASE_URL = "***REMOVED_TURSO_URL***";
-  }
-  if (!process.env.TURSO_AUTH_TOKEN) {
-    process.env.TURSO_AUTH_TOKEN = "***REMOVED_TURSO_TOKEN***";
-  }
-  if (!process.env.CLOUDINARY_CLOUD_NAME) {
-    process.env.CLOUDINARY_CLOUD_NAME = "***REMOVED_CLOUDINARY_CLOUD***";
-  }
-  if (!process.env.CLOUDINARY_API_KEY) {
-    process.env.CLOUDINARY_API_KEY = "***REMOVED_CLOUDINARY_KEY***";
-  }
-  if (!process.env.CLOUDINARY_API_SECRET) {
-    process.env.CLOUDINARY_API_SECRET = "***REMOVED_CLOUDINARY_SECRET***";
+  const userDataEnv = path.join(app.getPath("userData"), ".env.local");
+  [
+    path.join(appRoot, ".env.local"),
+    path.join(appRoot, ".env"),
+    userDataEnv,
+    path.join(app.getPath("userData"), ".env"),
+  ].forEach(loadEnvFile);
+
+  const missing = [
+    "TURSO_DATABASE_URL",
+    "TURSO_AUTH_TOKEN",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_API_SECRET",
+  ].filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    console.warn(
+      `[env] Missing credentials: ${missing.join(", ")}. Cloud sync and uploads are disabled. ` +
+        `Provide them in ${userDataEnv}`
+    );
   }
 }
 

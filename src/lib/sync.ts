@@ -19,10 +19,8 @@ let lastSyncError: string | null = null;
 let isOnlineState = true;
 
 function getTursoClient() {
-  const url = process.env.TURSO_DATABASE_URL || "***REMOVED_TURSO_URL***";
-  const authToken =
-    process.env.TURSO_AUTH_TOKEN ||
-    "***REMOVED_TURSO_TOKEN***";
+  const url = process.env.TURSO_DATABASE_URL;
+  const authToken = process.env.TURSO_AUTH_TOKEN;
   if (!url || !authToken) return null;
   return createClient({ url, authToken });
 }
