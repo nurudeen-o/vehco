@@ -1,13 +1,129 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Cloud, CloudOff, RefreshCw, AlertTriangle, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { Capacitor } from "@capacitor/core";
-import type { PluginListenerHandle } from "@capacitor/core";
 import { Network } from "@capacitor/network";
+import { flushQueue, getSyncSummary, subscribeSync } from "@/lib/offline/sync";
 
 const isNative = Capacitor.isNativePlatform();
+
+export function SyncStatusBadge() {
+  return isNative ? <NativeSyncBadge /> : <WebSyncBadge />;
+}
+
+function NativeSyncBadge() {
+  const [online, setOnline] = useState(true);
+  const [pending, setPending] = useState(0);
+  const [failed, setFailed] = useState(0);
+  const [busy, setBusy] = useState(false);
+
+  const refresh = useCallback(async () => {
+    const summary = await getSyncSummary();
+    setOnline(summary.online);
+    setPending(summary.pending);
+    setFailed(summary.failed);
+  }, []);
+
+  useEffect(() => {
+    refresh();
+    const unsubscribe = subscribeSync(refresh);
+    Network.getStatus()
+      .then((status) => setOnline(status.connected))
+      .catch(() => {});
+    const listenerPromise = Network.addListener("networkStatusChange", (status) => {
+      setOnline(status.connected);
+    });
+    return () => {
+      unsubscribe();
+      listenerPromise.then((handle) => handle.remove()).catch(() => {});
+    };
+  }, [refresh]);
+
+  const syncNow = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await flushQueue();
+      await refresh();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const label = busy
+    ? "Syncing..."
+    : !online
+    ? `Offline${pending > 0 ? ` (${pending})` : ""}`
+    : pending > 0
+    ? `${pending} pending`
+    : "Online";
+
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+          !online
+            ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+            : busy
+            ? "bg-blue-500/10 text-blue-600 border-blue-500/20"
+            : pending > 0
+            ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+            : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+        }`}
+        title={
+          !online
+            ? "You are offline. Changes are stored on this device and sync when you reconnect."
+            : pending > 0
+            ? `${pending} change(s) waiting to sync`
+            : "All local changes are synced"
+        }
+      >
+        {!online ? (
+          <>
+            <CloudOff className="w-3.5 h-3.5" />
+            <span>{label}</span>
+          </>
+        ) : busy ? (
+          <>
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            <span>{label}</span>
+          </>
+        ) : pending > 0 ? (
+          <>
+            <Cloud className="w-3.5 h-3.5" />
+            <span>{label}</span>
+          </>
+        ) : (
+          <>
+            <CheckCircle className="w-3.5 h-3.5" />
+            <span>{label}</span>
+          </>
+        )}
+      </div>
+
+      <button
+        onClick={syncNow}
+        disabled={busy || !online}
+        className="p-1 text-gray-500 hover:text-gray-900 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        title="Sync now"
+      >
+        <RefreshCw className={`w-3.5 h-3.5 ${busy ? "animate-spin text-blue-600" : ""}`} />
+      </button>
+
+      {failed > 0 && (
+        <span
+          className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 border border-red-500/20"
+          title={`${failed} change(s) were rejected by the server and need attention`}
+        >
+          <AlertTriangle className="w-3 h-3" />
+          <span>{failed} failed</span>
+        </span>
+      )}
+    </div>
+  );
+}
 
 interface SyncState {
   isOnline: boolean;
@@ -18,7 +134,7 @@ interface SyncState {
   lastError: string | null;
 }
 
-export function SyncStatusBadge() {
+function WebSyncBadge() {
   const [state, setState] = useState<SyncState>({
     isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
     isSyncing: false,
@@ -42,7 +158,7 @@ export function SyncStatusBadge() {
   }, []);
 
   const triggerSync = async () => {
-    if (isNative || triggering || state.isSyncing) return;
+    if (triggering || state.isSyncing) return;
     setTriggering(true);
     try {
       const res = await fetch("/api/sync/trigger", { method: "POST" });
@@ -59,25 +175,6 @@ export function SyncStatusBadge() {
   };
 
   useEffect(() => {
-    if (isNative) {
-      let listener: PluginListenerHandle | undefined;
-      Network.getStatus()
-        .then((status) => {
-          setState((prev) => ({ ...prev, isOnline: status.connected }));
-        })
-        .catch(() => {});
-      Network.addListener("networkStatusChange", (status) => {
-        setState((prev) => ({ ...prev, isOnline: status.connected }));
-      })
-        .then((handle) => {
-          listener = handle;
-        })
-        .catch(() => {});
-      return () => {
-        listener?.remove();
-      };
-    }
-
     fetchStatus();
     triggerSync();
 
@@ -108,7 +205,6 @@ export function SyncStatusBadge() {
 
   return (
     <div className="flex items-center gap-2">
-      {/* Network & sync badge */}
       <div
         className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
           !state.isOnline
@@ -121,7 +217,7 @@ export function SyncStatusBadge() {
         }`}
         title={
           !state.isOnline
-            ? "Device is offline. All changes are saved locally to SQLite."
+            ? "Device is offline."
             : state.lastSyncedAt
             ? `Last synced: ${new Date(state.lastSyncedAt).toLocaleTimeString()}`
             : "Online & Synced"
@@ -145,25 +241,21 @@ export function SyncStatusBadge() {
         ) : (
           <>
             <CheckCircle className="w-3.5 h-3.5" />
-            <span>{isNative ? "Online" : "Cloud Synced"}</span>
+            <span>Cloud Synced</span>
           </>
         )}
       </div>
 
-      {/* Manual Sync Button */}
-      {!isNative && (
-        <button
-          onClick={triggerSync}
-          disabled={isBusy}
-          className="p-1 text-gray-500 hover:text-gray-900 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
-          title="Sync with Turso and Cloudinary"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isBusy ? "animate-spin text-blue-600" : ""}`} />
-        </button>
-      )}
+      <button
+        onClick={triggerSync}
+        disabled={isBusy}
+        className="p-1 text-gray-500 hover:text-gray-900 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        title="Sync with Turso and Cloudinary"
+      >
+        <RefreshCw className={`w-3.5 h-3.5 ${isBusy ? "animate-spin text-blue-600" : ""}`} />
+      </button>
 
-      {/* Conflict review alert if any */}
-      {!isNative && state.conflictCount > 0 && (
+      {state.conflictCount > 0 && (
         <Link
           href="/settings/conflicts"
           className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 border border-red-500/20 hover:bg-red-500/20 transition-colors"

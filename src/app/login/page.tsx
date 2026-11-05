@@ -74,7 +74,11 @@ export default function LoginPage() {
         setLoading(false);
       }
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError(
+        typeof navigator !== "undefined" && !navigator.onLine
+          ? "You are offline. Connect to the internet to sign in for the first time."
+          : "An error occurred. Please try again."
+      );
       setLoading(false);
     }
   };

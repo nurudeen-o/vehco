@@ -162,10 +162,17 @@ try {
     }
   }
 
+  const syncUrl = (process.env.NEXT_PUBLIC_API_URL || "").trim();
+  if (!syncUrl) {
+    console.warn(
+      "[build-mobile] NEXT_PUBLIC_API_URL is not set. The app will run fully offline and will not sync."
+    );
+  }
+
   const mobileEnv = {
     ...process.env,
     CAPACITOR_BUILD: "true",
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://vehico.vercel.app",
+    NEXT_PUBLIC_API_URL: syncUrl,
   };
 
   execSync("npx prisma generate", {
