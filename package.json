@@ -65,6 +65,8 @@
     },
     "files": [
       "electron/**/*",
+      ".env",
+      ".env.local",
       ".next/**/*",
       "!**/.next/cache/**",
       "!**/.next/dev/**",
