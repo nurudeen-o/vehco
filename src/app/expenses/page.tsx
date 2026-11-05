@@ -74,7 +74,7 @@ export default async function ExpensesPage() {
                     <tr key={exp.id} className="hover:bg-slate-50 cursor-pointer">
                       <td className="py-3 px-4 text-xs text-slate-600">{formatDate(exp.date)}</td>
                       <td className="py-3 px-4">
-                        <Link href={`/expenses/${exp.id}`} className="font-semibold text-slate-800 hover:text-[#0F6B4B]">
+                        <Link href={`/expenses/view?id=${exp.id}`} className="font-semibold text-slate-800 hover:text-[#0F6B4B]">
                           {exp.vehicle.name} <span className="font-mono text-xs text-slate-500">({exp.vehicle.code})</span>
                         </Link>
                       </td>

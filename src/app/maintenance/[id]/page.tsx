@@ -1,4 +1,5 @@
 "use client";
+import { useRecordId } from "@/lib/useRecordId";
 
 import { useEffect, useState, use } from "react";
 import { Header } from "@/components/layout/Header";
@@ -9,12 +10,8 @@ import Link from "next/link";
 import { ArrowLeft, Edit, Wrench, DollarSign, Calendar } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
-export default function MaintenanceDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function MaintenanceDetailPage() {
+  const id = useRecordId();
   const [record, setRecord] = useState<any>(null);
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +77,7 @@ export default function MaintenanceDetailPage({
             </Button>
           </Link>
           {canEdit && (
-            <Link href={`/maintenance/${id}/edit`}>
+            <Link href={`/maintenance/view?id=${id}/edit`}>
               <Button variant="primary" size="sm">
                 <Edit className="w-4 h-4" /> Edit Record
               </Button>

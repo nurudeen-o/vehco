@@ -35,7 +35,7 @@ export default async function DriversPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {drivers.map((driver) => (
-            <Link key={driver.id} href={`/drivers/${driver.id}`}>
+            <Link key={driver.id} href={`/drivers/view?id=${driver.id}`}>
               <Card className="space-y-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">

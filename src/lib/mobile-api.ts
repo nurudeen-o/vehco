@@ -1,8 +1,20 @@
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from "@capacitor/status-bar";
 import { getApiBaseUrl, isApiPath, isNativePlatform, resolveApiUrl, toPath } from "./offline/config";
 import { offlineRequest } from "./offline/request";
 import { startSyncEngine } from "./offline/sync";
 
 export { getApiBaseUrl, resolveApiUrl };
+
+async function setupNativeShell(): Promise<void> {
+  try {
+    await StatusBar.setOverlaysWebView({ overlay: false });
+    await StatusBar.setStyle({ style: Style.Dark });
+    if (Capacitor.getPlatform() === "android") {
+      await StatusBar.setBackgroundColor({ color: "#ffffff" });
+    }
+  } catch {}
+}
 
 export function initMobileApiBridge(): void {
   if (typeof window === "undefined" || typeof window.fetch !== "function") {
@@ -65,7 +77,10 @@ export function initMobileApiBridge(): void {
     return originalFetch(input, init);
   };
 
-  if (native) startSyncEngine();
+  if (native) {
+    setupNativeShell();
+    startSyncEngine();
+  }
 
   if (typeof document !== "undefined") {
     document.addEventListener(

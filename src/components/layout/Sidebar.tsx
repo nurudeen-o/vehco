@@ -107,6 +107,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         "bg-slate-900 text-white flex flex-col no-print z-50",
         "lg:sticky lg:top-0 lg:translate-x-0 lg:w-[16.5rem] lg:h-screen lg:shrink-0 lg:overflow-y-auto",
         "fixed inset-y-0 left-0 w-[min(17.5rem,88vw)] min-h-screen",
+        "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
         "border-r border-slate-800/80 shadow-xl lg:shadow-none",
         "transition-transform duration-300 ease-out",
         open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"

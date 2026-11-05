@@ -1,4 +1,5 @@
 "use client";
+import { useRecordId } from "@/lib/useRecordId";
 
 import { useEffect, useState, use } from "react";
 import { Header } from "@/components/layout/Header";
@@ -9,12 +10,8 @@ import Link from "next/link";
 import QRCode from "qrcode";
 import { AppLogo } from "@/components/shared/AppLogo";
 
-export default function VehicleQRPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function VehicleQRPage() {
+  const id = useRecordId();
   const [vehicle, setVehicle] = useState<any>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [cardFormat, setCardFormat] = useState<"card" | "sticker" | "tag">("card");
@@ -46,7 +43,7 @@ export default function VehicleQRPage({
       <Header title={`Printable QR Card - ${vehicle.code}`} />
       <div className="page-pad">
         <div className="flex items-center justify-between no-print">
-          <Link href={`/vehicles/${vehicle.id}`}>
+          <Link href={`/vehicles/view?id=${vehicle.id}`}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" /> Back to Vehicle
             </Button>

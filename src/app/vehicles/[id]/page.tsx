@@ -1,4 +1,5 @@
 "use client";
+import { useRecordId } from "@/lib/useRecordId";
 
 import { useEffect, useState, use } from "react";
 import { Header } from "@/components/layout/Header";
@@ -10,12 +11,8 @@ import { QrCode, ArrowLeft, Wrench, DollarSign, UserMinus, UserCheck, Camera, Tr
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { VehicleSpendAnalysis } from "@/components/analytics/VehicleSpendAnalysis";
 
-export default function VehicleDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function VehicleDetailPage() {
+  const id = useRecordId();
   const [vehicle, setVehicle] = useState<any>(null);
   const [drivers, setDrivers] = useState<any[]>([]);
   const [sessionUser, setSessionUser] = useState<any>(null);
@@ -203,13 +200,13 @@ export default function VehicleDetailPage({
           <div className="flex gap-2">
             <VehicleSpendAnalysis currentVehicleId={vehicle.id} buttonLabel="Vehicle Spend" />
             {canEdit && (
-              <Link href={`/vehicles/${vehicle.id}/edit`}>
+              <Link href={`/vehicles/view/edit?id=${vehicle.id}`}>
                 <Button variant="primary" size="sm">
                   <Edit className="w-4 h-4" /> Edit Vehicle
                 </Button>
               </Link>
             )}
-            <Link href={`/vehicles/${vehicle.id}/qr`}>
+            <Link href={`/vehicles/view/qr?id=${vehicle.id}`}>
               <Button variant="outline" size="sm">
                 <QrCode className="w-4 h-4" /> QR Card & Identification
               </Button>

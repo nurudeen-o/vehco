@@ -1,4 +1,5 @@
 "use client";
+import { useRecordId } from "@/lib/useRecordId";
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
@@ -9,12 +10,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { EXPENSE_CATEGORIES } from "@/lib/constants";
 
-export default function EditExpensePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function EditExpensePage() {
+  const id = useRecordId();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -55,7 +52,7 @@ export default function EditExpensePage({
         body: JSON.stringify(formData),
       });
       if (res.ok) {
-        router.push(`/expenses/${id}`);
+        router.push(`/expenses/view?id=${id}`);
       }
     } catch (err) {
       console.error(err);
@@ -84,7 +81,7 @@ export default function EditExpensePage({
       <Header title="Edit Expense Record" />
       <div className="page-pad max-w-4xl mx-auto">
         <div className="flex items-center gap-3">
-          <Link href={`/expenses/${id}`}>
+          <Link href={`/expenses/view?id=${id}`}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" /> Back to Expense
             </Button>
@@ -161,7 +158,7 @@ export default function EditExpensePage({
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-              <Link href={`/expenses/${id}`}>
+              <Link href={`/expenses/view?id=${id}`}>
                 <Button type="button" variant="outline">
                   Cancel
                 </Button>

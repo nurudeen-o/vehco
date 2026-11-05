@@ -1,4 +1,5 @@
 "use client";
+import { useRecordId } from "@/lib/useRecordId";
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
@@ -8,12 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-export default function EditMaintenancePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function EditMaintenancePage() {
+  const id = useRecordId();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -70,7 +67,7 @@ export default function EditMaintenancePage({
         body: JSON.stringify(formData),
       });
       if (res.ok) {
-        router.push(`/maintenance/${id}`);
+        router.push(`/maintenance/view?id=${id}`);
       }
     } catch (err) {
       console.error(err);
@@ -99,7 +96,7 @@ export default function EditMaintenancePage({
       <Header title="Edit Maintenance Record" />
       <div className="page-pad max-w-4xl mx-auto">
         <div className="flex items-center gap-3">
-          <Link href={`/maintenance/${id}`}>
+          <Link href={`/maintenance/view?id=${id}`}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" /> Back to Record
             </Button>
@@ -207,7 +204,7 @@ export default function EditMaintenancePage({
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-              <Link href={`/maintenance/${id}`}>
+              <Link href={`/maintenance/view?id=${id}`}>
                 <Button type="button" variant="outline">
                   Cancel
                 </Button>

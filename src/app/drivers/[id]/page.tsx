@@ -1,4 +1,5 @@
 "use client";
+import { useRecordId } from "@/lib/useRecordId";
 
 import { useEffect, useState, use } from "react";
 import { Header } from "@/components/layout/Header";
@@ -9,12 +10,8 @@ import Link from "next/link";
 import { ArrowLeft, Edit, Phone, Mail, Award, Calendar } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
-export default function DriverDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function DriverDetailPage() {
+  const id = useRecordId();
   const [driver, setDriver] = useState<any>(null);
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +77,7 @@ export default function DriverDetailPage({
             </Button>
           </Link>
           {canEdit && (
-            <Link href={`/drivers/${id}/edit`}>
+            <Link href={`/drivers/view?id=${id}/edit`}>
               <Button variant="primary" size="sm">
                 <Edit className="w-4 h-4" /> Edit Driver
               </Button>
@@ -152,7 +149,7 @@ export default function DriverDetailPage({
             <div className="mt-3">
               {driver.assignedVehicles && driver.assignedVehicles.length > 0 ? (
                 driver.assignedVehicles.map((v: any) => (
-                  <Link key={v.id} href={`/vehicles/${v.id}`} className="block mt-2 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+                  <Link key={v.id} href={`/vehicles/view?id=${v.id}`} className="block mt-2 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
                     <p className="font-bold text-lg">{v.code}</p>
                     <p className="text-xs opacity-90">{v.name} ({v.registrationNumber})</p>
                   </Link>

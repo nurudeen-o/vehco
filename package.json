@@ -109,6 +109,7 @@
     "@capacitor/core": "^8.6.0",
     "@capacitor/ios": "^8.6.0",
     "@capacitor/network": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.4",
     "@libsql/client": "^0.8.1",
     "@prisma/adapter-libsql": "^6.19.3",
     "@prisma/client": "^6.19.3",

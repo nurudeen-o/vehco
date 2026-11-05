@@ -1,4 +1,5 @@
 "use client";
+import { useRecordId } from "@/lib/useRecordId";
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
@@ -8,12 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-export default function EditDriverPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function EditDriverPage() {
+  const id = useRecordId();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -57,7 +54,7 @@ export default function EditDriverPage({
         body: JSON.stringify(formData),
       });
       if (res.ok) {
-        router.push(`/drivers/${id}`);
+        router.push(`/drivers/view?id=${id}`);
       }
     } catch (err) {
       console.error(err);
@@ -86,7 +83,7 @@ export default function EditDriverPage({
       <Header title="Edit Driver" />
       <div className="page-pad max-w-4xl mx-auto">
         <div className="flex items-center gap-3">
-          <Link href={`/drivers/${id}`}>
+          <Link href={`/drivers/view?id=${id}`}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" /> Back to Driver
             </Button>
@@ -188,7 +185,7 @@ export default function EditDriverPage({
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-              <Link href={`/drivers/${id}`}>
+              <Link href={`/drivers/view?id=${id}`}>
                 <Button type="button" variant="outline">
                   Cancel
                 </Button>

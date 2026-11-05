@@ -90,12 +90,12 @@ export default async function VehiclesPage() {
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Link href={`/vehicles/${v.id}`}>
+                          <Link href={`/vehicles/view?id=${v.id}`}>
                             <Button variant="ghost" size="sm">
                               <Eye className="w-4 h-4" /> View
                             </Button>
                           </Link>
-                          <Link href={`/vehicles/${v.id}/qr`}>
+                          <Link href={`/vehicles/view/qr?id=${v.id}`}>
                             <Button variant="outline" size="sm">
                               <QrCode className="w-4 h-4" /> QR Card
                             </Button>

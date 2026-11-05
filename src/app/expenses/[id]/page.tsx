@@ -1,4 +1,5 @@
 "use client";
+import { useRecordId } from "@/lib/useRecordId";
 
 import { useEffect, useState, use } from "react";
 import { Header } from "@/components/layout/Header";
@@ -9,12 +10,8 @@ import Link from "next/link";
 import { ArrowLeft, Edit, DollarSign, Calendar, FileText } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
-export default function ExpenseDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function ExpenseDetailPage() {
+  const id = useRecordId();
   const [expense, setExpense] = useState<any>(null);
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +77,7 @@ export default function ExpenseDetailPage({
             </Button>
           </Link>
           {canEdit && (
-            <Link href={`/expenses/${id}/edit`}>
+            <Link href={`/expenses/view?id=${id}/edit`}>
               <Button variant="primary" size="sm">
                 <Edit className="w-4 h-4" /> Edit Expense
               </Button>
@@ -138,7 +135,7 @@ export default function ExpenseDetailPage({
           <Card className="bg-[#0F6B4B] text-white">
             <h3 className="text-xs font-semibold uppercase tracking-wider opacity-80">Vehicle Information</h3>
             <div className="mt-3">
-              <Link href={`/vehicles/${expense.vehicle?.id}`} className="block p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+              <Link href={`/vehicles/view?id=${expense.vehicle?.id}`} className="block p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
                 <p className="font-bold text-lg">{expense.vehicle?.code}</p>
                 <p className="text-xs opacity-90">{expense.vehicle?.name}</p>
                 <p className="text-xs opacity-75">{expense.vehicle?.registrationNumber}</p>
