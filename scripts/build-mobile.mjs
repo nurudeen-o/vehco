@@ -162,12 +162,9 @@ try {
     }
   }
 
-  const syncUrl = (process.env.NEXT_PUBLIC_API_URL || "").trim();
-  if (!syncUrl) {
-    console.warn(
-      "[build-mobile] NEXT_PUBLIC_API_URL is not set. The app will run fully offline and will not sync."
-    );
-  }
+  const DEFAULT_SYNC_URL = "https://faco-system.netlify.app";
+  const syncUrl = ((process.env.NEXT_PUBLIC_API_URL || "").trim() || DEFAULT_SYNC_URL).replace(/\/+$/, "");
+  console.log(`[build-mobile] Sync server: ${syncUrl}`);
 
   const mobileEnv = {
     ...process.env,

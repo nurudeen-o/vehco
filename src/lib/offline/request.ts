@@ -59,7 +59,7 @@ export async function offlineRequest({
       {
         error: remote
           ? "You are offline. This data has not been synced to this device yet."
-          : "No sync server is configured. Set the server address on the sign-in screen.",
+          : "No sync server is configured for this build.",
       },
       503
     );
@@ -88,7 +88,7 @@ export async function offlineRequest({
       {
         error: remote
           ? "Could not reach the sync server. Check your internet connection and the server address."
-          : "No sync server is configured. Enter the server address below and sign in again.",
+          : "No sync server is configured for this build.",
       },
       503
     );

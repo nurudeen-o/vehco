@@ -81,7 +81,7 @@ function NativeSyncBadge() {
         }`}
         title={
           !serverConfigured
-            ? "No sync server configured. Set the address on the sign-in screen."
+            ? "No sync server configured for this build."
             : !online
             ? "You are offline. Changes are stored on this device and sync when you reconnect."
             : pending > 0
