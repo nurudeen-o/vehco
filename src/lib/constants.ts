@@ -6,6 +6,14 @@ export const APP_CONFIG = {
   supportEmail: "fleet-support@facotransport.com",
 };
 
+export const PUBLIC_SITE_URL = (
+  process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://facotransport.com"
+).replace(/\/+$/, "");
+
+export function buildVerifyUrl(vehicleCode: string): string {
+  return `${PUBLIC_SITE_URL}/verify?code=${encodeURIComponent(vehicleCode)}`;
+}
+
 export const BRAND_COLORS = {
   primary: "#0F6B4B",
   secondary: "#1E8E5A",

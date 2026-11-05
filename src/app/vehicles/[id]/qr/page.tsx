@@ -9,6 +9,7 @@ import { ArrowLeft, Printer, Download } from "lucide-react";
 import Link from "next/link";
 import QRCode from "qrcode";
 import { AppLogo } from "@/components/shared/AppLogo";
+import { buildVerifyUrl } from "@/lib/constants";
 
 export default function VehicleQRPage() {
   const id = useRecordId();
@@ -21,7 +22,7 @@ export default function VehicleQRPage() {
       .then((res) => res.json())
       .then((data) => {
         setVehicle(data);
-        const publicUrl = `${window.location.origin}/qr/${data.code}`;
+        const publicUrl = buildVerifyUrl(data.code);
         QRCode.toDataURL(publicUrl, { width: 300, margin: 2 }).then(setQrDataUrl);
       });
   }, [id]);
