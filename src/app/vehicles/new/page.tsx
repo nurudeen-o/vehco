@@ -98,7 +98,7 @@ export default function NewVehiclePage() {
         </div>
 
         <Card>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form data-tour="vehicles-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Vehicle Code</label>
@@ -262,7 +262,7 @@ export default function NewVehiclePage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <div data-tour="vehicles-form-submit" className="flex justify-end gap-3 pt-4 border-t border-slate-100">
               <Link href="/vehicles">
                 <Button type="button" variant="outline">
                   Cancel

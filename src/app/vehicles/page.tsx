@@ -28,14 +28,14 @@ export default async function VehiclesPage() {
             <h3 className="text-lg font-bold text-slate-900">Fleet Vehicles</h3>
             <p className="text-xs text-slate-500">Manage vehicle records, driver assignments, and QR code badges.</p>
           </div>
-          <Link href="/vehicles/new">
+          <Link href="/vehicles/new" data-tour="vehicles-add-btn">
             <Button variant="primary" size="sm">
               <Plus className="w-4 h-4" /> Register Vehicle
             </Button>
           </Link>
         </div>
 
-        <Card>
+        <Card data-tour="vehicles-filters">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-medium">
@@ -57,8 +57,12 @@ export default async function VehiclesPage() {
                     </td>
                   </tr>
                 ) : (
-                  vehicles.map((v) => (
-                    <tr key={v.id} className="hover:bg-slate-50">
+                  vehicles.map((v, i) => (
+                    <tr
+                      key={v.id}
+                      data-tour={i === 0 ? "vehicles-first-row" : undefined}
+                      className="hover:bg-slate-50"
+                    >
                       <td className="py-3 px-4 font-bold text-slate-900">{v.code}</td>
                       <td className="py-3 px-4">
                         <div className="font-semibold text-slate-800">{v.name}</div>

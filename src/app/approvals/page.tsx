@@ -116,7 +116,7 @@ export default function ApprovalsPage() {
           <p className="text-xs text-slate-500">Manager and CEO workflow queue for operational requests.</p>
         </div>
 
-        <Card>
+        <Card data-tour="approvals-queue">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-medium">
@@ -160,7 +160,7 @@ export default function ApprovalsPage() {
                       <td className="py-3 px-4 text-xs text-slate-500">{formatDate(app.createdAt)}</td>
                       <td className="py-3 px-4 text-right">
                         {app.status === "PENDING" ? (
-                          <div className="flex items-center justify-end gap-2">
+                          <div data-tour="approvals-actions" className="flex items-center justify-end gap-2">
                             {actionId === app.id ? (
                               <div className="w-5 h-5 border-2 border-[#0F6B4B] border-t-transparent rounded-full animate-spin mr-6" />
                             ) : (

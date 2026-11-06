@@ -119,6 +119,7 @@ function NativeSyncBadge() {
 
       <button
         onClick={syncNow}
+        data-tour="header-sync-btn"
         disabled={busy || !online || !serverConfigured}
         className="p-1 text-gray-500 hover:text-gray-900 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
         title="Sync now"

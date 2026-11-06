@@ -33,7 +33,7 @@ export default function ReportsPage() {
           <p className="text-xs text-slate-500">Generate executive summaries, operational exports, and compliance documentation.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <div data-tour="reports-criteria" className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {reportTypes.map((report) => (
             <Card key={report.title} className="space-y-4">
               <div className="flex items-start justify-between gap-3">
@@ -46,7 +46,10 @@ export default function ReportsPage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
+              <div
+                data-tour={report.type === "VEHICLE_SPEND" ? "reports-export-btns" : undefined}
+                className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100"
+              >
                 <Button variant="outline" size="sm" onClick={() => handleDownload(report.type, 'pdf')}>
                   <FileText className="w-3.5 h-3.5 text-rose-600" /> Export PDF
                 </Button>

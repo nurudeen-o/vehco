@@ -30,7 +30,7 @@ export default async function ExpensesPage() {
           </div>
           <div className="flex items-center gap-2">
             <VehicleSpendAnalysis buttonLabel="Vehicle Spend Analysis" />
-            <Link href="/expenses/new">
+            <Link href="/expenses/new" data-tour="expenses-add-btn">
               <Button variant="primary" size="sm">
                 <Plus className="w-4 h-4" /> Add Expense Record
               </Button>

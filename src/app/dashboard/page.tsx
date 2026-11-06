@@ -34,7 +34,7 @@ export default async function DashboardPage() {
     <>
       <Header title="Dashboard & KPI Analytics" />
       <div className="page-pad">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div data-tour="dashboard-kpis" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <Card>
             <div className="flex items-center justify-between">
               <div>

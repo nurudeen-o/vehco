@@ -15,11 +15,13 @@ import {
   Settings,
   X,
   MessageSquare,
+  HelpCircle,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 import { AppLogo } from "@/components/shared/AppLogo";
+import { useWalkthrough } from "@/components/walkthrough/WalkthroughContext";
 
 type NavItem = {
   name: string;
@@ -77,6 +79,7 @@ type SidebarProps = {
 
 export function Sidebar({ open = false, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { openHelp } = useWalkthrough();
   const [role, setRole] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<PermissionKey[] | null>(null);
 
@@ -130,7 +133,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       </div>
 
       {/* Nav groups */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto overscroll-contain">
+      <nav data-tour="sidebar-nav" className="flex-1 px-3 py-4 overflow-y-auto overscroll-contain">
         <div className="space-y-5">
           {navigation.map((group) => {
             const visibleItems = group.items.filter(isItemVisible);
@@ -146,11 +149,20 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                     const isActive =
                       pathname === item.href || pathname.startsWith(item.href + "/");
                     const Icon = item.icon;
+                    const tourTag =
+                      item.href === "/vehicles"
+                        ? "sidebar-vehicles"
+                        : item.href === "/expenses"
+                        ? "sidebar-expenses"
+                        : item.href === "/approvals"
+                        ? "sidebar-approvals"
+                        : undefined;
                     return (
                       <li key={item.name}>
                         <Link
                           href={item.href}
                           onClick={onClose}
+                          data-tour={tourTag}
                           className={cn(
                             "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-colors",
                             "active:scale-[0.99]",
@@ -188,7 +200,22 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-slate-800">
+      <div className="p-3 border-t border-slate-800 space-y-2">
+        <button
+          type="button"
+          onClick={() => {
+            openHelp();
+            if (onClose) onClose();
+          }}
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white text-xs font-medium transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <HelpCircle className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Help & Walkthrough</span>
+          </span>
+          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-400">?</kbd>
+        </button>
+
         <div className="rounded-xl bg-slate-800/60 px-3 py-2.5 flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold text-slate-200 truncate">Enterprise v1.0</p>

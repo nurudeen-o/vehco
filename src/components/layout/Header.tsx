@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Search, LogOut, Menu } from "lucide-react";
+import { Bell, Search, LogOut, Menu, HelpCircle } from "lucide-react";
 import { getRoleLabel } from "@/lib/permissions";
 import { useShell } from "./AppShell";
 import { SyncStatusBadge } from "@/components/SyncStatusBadge";
+import { useWalkthrough } from "@/components/walkthrough/WalkthroughContext";
+import { GlobalSearch } from "./GlobalSearch";
 
 export function Header({ title }: { title?: string }) {
   const router = useRouter();
   const { toggleSidebar } = useShell();
+  const { toggleHelp, completedTours } = useWalkthrough();
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -68,17 +71,12 @@ export function Header({ title }: { title?: string }) {
 
       <div className="flex items-center gap-1.5 sm:gap-4">
         {/* Offline & Sync Status */}
-        <SyncStatusBadge />
+        <div data-tour="header-sync">
+          <SyncStatusBadge />
+        </div>
 
         {/* Desktop search */}
-        <div className="relative hidden md:block">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search vehicle code, driver..."
-            className="pl-9 pr-4 py-1.5 text-sm bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0F6B4B] w-48 lg:w-64"
-          />
-        </div>
+        <GlobalSearch />
 
         {/* Mobile search toggle */}
         <button
@@ -97,6 +95,21 @@ export function Header({ title }: { title?: string }) {
         >
           <Bell className="w-5 h-5" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full" />
+        </button>
+
+        {/* In-App Help & Walkthrough */}
+        <button
+          type="button"
+          onClick={toggleHelp}
+          data-tour="header-help"
+          className="relative p-2 text-slate-600 hover:text-[#0F6B4B] hover:bg-slate-100 rounded-lg transition-colors"
+          title="Help & Walkthrough Center (?)"
+          aria-label="Open Help & Walkthrough Center"
+        >
+          <HelpCircle className="w-5 h-5" />
+          {completedTours.length === 0 && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#0F6B4B] rounded-full animate-pulse" />
+          )}
         </button>
 
         {user && (
@@ -123,16 +136,8 @@ export function Header({ title }: { title?: string }) {
 
       {/* Mobile search bar expand */}
       {searchOpen && (
-        <div className="absolute left-0 right-0 top-full border-b border-slate-200 bg-white p-3 md:hidden shadow-sm">
-          <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              autoFocus
-              placeholder="Search vehicle code, driver..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0F6B4B]"
-            />
-          </div>
+        <div className="absolute left-0 right-0 top-full border-b border-slate-200 bg-white p-3 md:hidden shadow-lg z-50">
+          <GlobalSearch isMobile onCloseMobile={() => setSearchOpen(false)} />
         </div>
       )}
     </header>

@@ -25,3 +25,4 @@ dist-electron/
 *.tsbuildinfo
 
 share/
+dist-mobile/

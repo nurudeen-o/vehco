@@ -1,6 +1,6 @@
 {
   "name": "facotransport",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "main": "electron/main.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "cap:open:ios": "cap open ios",
     "run:ios": "npm run cap:sync && npx cap run ios",
     "build:android": "cd android && ./gradlew assembleDebug",
+    "build:android:release": "cd android && ./gradlew assembleRelease",
     "build:ios": "xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build",
     "archive:ios": "xcodebuild archive -workspace ios/App/App.xcworkspace -scheme App -configuration Release -archivePath build/ios/App.xcarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=\"\""
   },
